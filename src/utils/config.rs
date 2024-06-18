@@ -1,7 +1,7 @@
 use crate::utils::xdg::XDG_DIRS;
 use anyhow::{Context, Error, Result};
+use nw_derive::Optional;
 use serde::Deserialize;
-use smart_default::SmartDefault;
 use std::fs::File;
 use std::process::{Command, Stdio};
 use std::sync::LazyLock;
@@ -14,63 +14,83 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(|| match Config::new() {
     Err(err) => abort(err),
 });
 
-#[derive(Deserialize, Default)]
+#[derive(Optional)]
+#[derives(Deserialize)]
 pub struct Config {
-    #[serde(default)]
+    #[internal]
     pub general: ConfigGeneral,
-    #[serde(default)]
+    #[internal]
     pub nix: ConfigNix,
 }
-#[derive(Deserialize, SmartDefault)]
+#[derive(Optional)]
+#[derives(Deserialize)]
 pub struct ConfigGeneral {
-    #[serde(default = "default_shell")]
-    #[default(default_shell())]
     pub shell: String,
 }
-#[derive(Deserialize, SmartDefault)]
+impl ConfigGeneral {
+    fn default_shell() -> String {
+        std::option_env!("SHELL").unwrap_or("bash").into()
+    }
+}
+#[derive(Optional)]
+#[derives(Deserialize)]
 pub struct ConfigNix {
-    #[serde(default = "default_nix_channel")]
-    #[default(default_nix_channel())]
     pub channel: String,
+    pub flake: String,
+}
+impl ConfigNix {
+    fn default_channel(flake: &str) -> String {
+        let flake: Result<String> = try {
+            let stdout = Command::new("nix")
+                .args(["flake", "metadata", "--json", flake])
+                .stdout(Stdio::piped())
+                .spawn()
+                .map_err(Error::from)
+                .and_then(|mut child| {
+                    child.wait()?;
+                    child.stdout.context("Failed to retrieve stdout")
+                })
+                .context("Failed to get nixos flake metadata")?;
+
+            let mut metadata: FlakeMetadata =
+                serde_json::from_reader(stdout).context("Failed to parse nixos flake metadata")?;
+
+            let channel = metadata
+                .locks
+                .nodes
+                .remove("nixpkgs")
+                .and_then(|node| node.original)
+                .and_then(|original| original.r#ref)
+                .context("Failed to find nixpkgs chanel")?;
+            channel
+        };
+        flake.unwrap_or("nixos-unstable".into())
+    }
+
+    fn default_flake() -> String {
+        String::new()
+    }
 }
 
-fn default_shell() -> String {
-    std::option_env!("SHELL").unwrap_or("bash").into()
-}
+impl From<ConfigInternal> for Config {
+    fn from(value: ConfigInternal) -> Self {
+        let shell = value
+            .general
+            .and_then(|g| g.shell)
+            .unwrap_or_else(ConfigGeneral::default_shell);
 
-fn default_nix_channel() -> String {
-    /* match try_default_nix_channel() {
-        Ok(channel) => channel,
-        Err(err) => abort(err),
-    } */
-    try_default_nix_channel().unwrap_or("nixos-unstable".into())
-}
+        let [channel, flake] = value.nix.map_or([None, None], |n| [n.channel, n.flake]);
+        let flake = flake.unwrap_or_else(ConfigNix::default_flake);
+        let channel = channel.unwrap_or_else(|| ConfigNix::default_channel(&flake));
 
-fn try_default_nix_channel() -> Result<String> {
-    let stdout = Command::new("nix")
-        // TODO: customizable directory
-        .args(["flake", "metadata", "--json", "/etc/nixos"])
-        .stdout(Stdio::piped())
-        .spawn()
-        .map_err(Error::from)
-        .and_then(|mut child| {
-            child.wait()?;
-            child.stdout.context("Failed to retrieve stdout")
-        })
-        .context("Failed to get nixos flake metadata")?;
+        let general = ConfigGeneral { shell };
+        let nix = ConfigNix {
+            channel,
+            flake: String::new(),
+        };
 
-    let mut metadata: FlakeMetadata =
-        serde_json::from_reader(stdout).context("Failed to parse nixos flake metadata")?;
-
-    let channel = metadata
-        .locks
-        .nodes
-        .remove("nixpkgs")
-        .and_then(|node| node.original)
-        .and_then(|original| original.r#ref)
-        .context("Failed to find nixpkgs chanel")?;
-
-    Ok(channel)
+        Self { general, nix }
+    }
 }
 
 impl Config {
@@ -86,7 +106,8 @@ impl Config {
             .context("Failed to create config file")?;
 
         let content = std::fs::read_to_string(config_path).context("Failed to open config file")?;
-        let config: Config = toml::from_str(&content).context("Failed to parse config file")?;
-        Ok(config)
+        let config: ConfigInternal =
+            toml::from_str(&content).context("Failed to parse config file")?;
+        Ok(config.into())
     }
 }
