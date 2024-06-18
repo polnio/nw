@@ -11,8 +11,20 @@ pub struct Args {
 
 #[derive(clap::Subcommand)]
 pub enum Command {
+    Search(SearchArgs),
+    Info(InfoArgs),
     Shell(ShellArgs),
     Run(RunArgs),
+}
+
+#[derive(clap::Args)]
+pub struct SearchArgs {
+    pub query: String,
+}
+
+#[derive(clap::Args)]
+pub struct InfoArgs {
+    pub package: String,
 }
 
 #[derive(clap::Args)]
