@@ -22,7 +22,7 @@
           fenix-packages = fenix.packages.${system};
           toolchain = fenix-packages.fromToolchainFile {
             file = ./rust-toolchain.toml;
-            sha256 = "sha256-utkZGQsUwT7OsqZxDZsZf/TCozAb6iEhcdytVFvEgQw=";
+            sha256 = "sha256-mzmoCgegbyRHNqCEo9r2ifkw2bHOuDcXjVOwMxCapeY=";
           };
           rustPlatform = pkgs.makeRustPlatform {
             cargo = toolchain;
