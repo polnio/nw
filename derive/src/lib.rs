@@ -24,7 +24,6 @@ fn is_attr_internal(attr: &Attribute) -> bool {
 #[proc_macro_derive(Optional, attributes(derives, internal))]
 pub fn derive_optionnal(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    println!("{:#?}", input);
 
     let name = input.ident;
     let internal_name = Ident::new(format!("{}Internal", name).as_str(), Span::call_site());
@@ -109,8 +108,6 @@ pub fn derive_optionnal(input: proc_macro::TokenStream) -> proc_macro::TokenStre
                 ..field
             }
         }));
-
-    println!("{}", new_fields.to_token_stream());
 
     let output: TokenStream = quote! {
         impl #name {
