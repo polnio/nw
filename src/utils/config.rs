@@ -1,5 +1,5 @@
 use super::errors::{abort, print_error};
-use super::flake::FlakeMetadata;
+use super::flake::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
 use crate::utils::xdg::XDG_DIRS;
 use anyhow::{Context, Error, Result};
 use nw_derive::Optional;
@@ -39,32 +39,22 @@ pub struct ConfigNix {
 }
 impl ConfigNix {
     fn default_channel(os_flake: &str) -> String {
-        let flake: Result<String> = try {
-            let stdout = Command::new("nix")
-                .args(["flake", "metadata", "--json", os_flake])
-                .stdout(Stdio::piped())
-                .spawn()
-                .map_err(Error::from)
-                .and_then(|mut child| {
-                    child.wait()?;
-                    child.stdout.context("Failed to retrieve stdout")
-                })
-                .context("Failed to get nixos flake metadata")?;
-
-            let mut metadata: FlakeMetadata =
-                serde_json::from_reader(stdout).context("Failed to parse nixos flake metadata")?;
-
+        let channel: Result<String> = try {
+            let mut metadata =
+                FlakeMetadata::get(os_flake).context("Failed to fetch flake metadata")?;
             let channel = metadata
                 .locks
                 .nodes
                 .remove("nixpkgs")
-                .and_then(|node| node.original)
-                .and_then(|original| original.r#ref)
+                .and_then(|node| match node.original {
+                    Some(FlakeMetadataLocksNodesOriginal::Github(original)) => original.r#ref,
+                    _ => None,
+                })
                 .context("Failed to find nixpkgs chanel")?;
             channel
         };
-        match flake.context("Failed to retrieve nixos channel") {
-            Ok(flake) => flake,
+        match channel.context("Failed to retrieve nixos channel") {
+            Ok(channel) => channel,
             Err(err) => {
                 print_error(err);
                 "nixos-unstable".into()

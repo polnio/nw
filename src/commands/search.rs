@@ -1,4 +1,5 @@
-use crate::utils::{api, args::SearchArgs};
+use crate::utils::api;
+use crate::utils::args::SearchArgs;
 use anyhow::{Context, Result};
 use std::io::{stdout, Write};
 use tabwriter::TabWriter;

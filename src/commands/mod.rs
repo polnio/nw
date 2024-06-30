@@ -1,3 +1,4 @@
+pub mod flake;
 mod info;
 mod run;
 mod search;
