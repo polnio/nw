@@ -7,6 +7,8 @@ pub static ARGS: LazyLock<Args> = LazyLock::new(Args::parse);
 pub struct Args {
     #[command(subcommand)]
     pub command: Command,
+    #[arg(long, global = true)]
+    pub offline: bool,
 }
 
 #[derive(clap::Subcommand)]

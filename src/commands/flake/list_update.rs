@@ -1,10 +1,15 @@
-use crate::utils::args::FlakeUpdateArgs;
+use crate::utils::args::{FlakeUpdateArgs, ARGS};
 use crate::utils::errors;
 use crate::utils::flake::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
 use crate::utils::flake::remote::FlakeRemote;
 use anyhow::{Context, Result};
 
 pub fn list_update(args: &FlakeUpdateArgs) -> Result<()> {
+    if ARGS.offline {
+        eprintln!("Offline mode is not supported");
+        std::process::exit(1);
+    }
+
     let flake = args
         .flake
         .as_ref()

@@ -1,11 +1,10 @@
 use super::errors::{abort, print_error};
 use super::flake::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
 use crate::utils::xdg::XDG_DIRS;
-use anyhow::{Context, Error, Result};
+use anyhow::{Context, Result};
 use nw_derive::Optional;
 use serde::Deserialize;
 use std::fs::File;
-use std::process::{Command, Stdio};
 use std::sync::LazyLock;
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| match Config::new() {
