@@ -13,7 +13,7 @@ pub fn search(args: &SearchArgs) -> Result<()> {
         write!(
             &mut tw,
             "{}\t{}\t{}\n",
-            package.pname,
+            package.attr_name,
             package.pversion,
             package.description.unwrap_or_default()
         )

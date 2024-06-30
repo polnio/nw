@@ -9,28 +9,19 @@ use std::sync::LazyLock;
 
 #[derive(Deserialize)]
 pub struct ApiError {
-    pub code: u32,
     pub message: String,
 }
 
 #[derive(Deserialize)]
 pub struct ApiPackage {
-    #[serde(rename = "package_pname")]
-    pub pname: String,
     #[serde(rename = "package_pversion")]
     pub pversion: String,
-    #[serde(rename = "package_platforms")]
-    pub platforms: Vec<String>,
-    #[serde(rename = "package_programs")]
-    pub programs: Vec<String>,
-    #[serde(rename = "package_license_set")]
-    pub license_set: Vec<String>,
+    #[serde(rename = "package_attr_name")]
+    pub attr_name: String,
     #[serde(rename = "package_description")]
     pub description: Option<String>,
     #[serde(rename = "package_longDescription")]
     pub long_description: Option<String>,
-    #[serde(rename = "package_system")]
-    pub system: String,
     #[serde(rename = "package_homepage")]
     pub homepage: Vec<String>,
     #[serde(rename = "package_position")]
@@ -133,8 +124,8 @@ pub fn get_by_query(query: String) -> Result<Vec<ApiPackage>> {
     Ok(packages)
 }
 
-pub fn get_by_pname(pname: String) -> Result<Option<ApiPackage>> {
-    let query = Search::new().query(Query::r#match("package_pname", pname));
+pub fn get_by_attr_name(name: String) -> Result<Option<ApiPackage>> {
+    let query = Search::new().query(Query::r#match("package_attr_name", name));
     let packages = fetch_api(query)?;
     let package = packages.into_iter().next();
     Ok(package)

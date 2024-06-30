@@ -18,8 +18,8 @@ fn parse_description(description: String) -> String {
 }
 
 pub fn info(args: &InfoArgs) -> Result<()> {
-    let response =
-        api::get_by_pname(args.package.clone()).context("Failed to fetch package informations")?;
+    let response = api::get_by_attr_name(args.package.clone())
+        .context("Failed to fetch package informations")?;
     let Some(package) = response else {
         println!("The package {} does not exist", args.package);
         return Ok(());
@@ -28,7 +28,7 @@ pub fn info(args: &InfoArgs) -> Result<()> {
     write!(
         tw,
         "Name\t: {}\nVersion\t: {}\nDescription\t: {}\nHomepage\t: {}\nDeclaration\t: {}\n",
-        package.pname,
+        package.attr_name,
         package.pversion,
         package
             .long_description
