@@ -6,9 +6,7 @@ use std::process::Command;
 pub fn run(args: &RunArgs) -> Result<()> {
     let package = parse_package_name(&args.package);
     Command::new("nix")
-        .arg("run")
-        .arg(package)
-        .arg("--")
+        .args(["run", &package, "--"])
         .args(&args.args)
         .spawn()?
         .wait()?;
