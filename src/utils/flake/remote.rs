@@ -3,6 +3,8 @@ use serde::Deserialize;
 use std::io::{BufRead as _, BufReader};
 use std::process::{Command, Stdio};
 
+use crate::utils::args::ARGS;
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FlakeRemote {
@@ -12,8 +14,12 @@ pub struct FlakeRemote {
 
 impl FlakeRemote {
     pub fn get_url(url: &str) -> Result<Self> {
-        let stdout = Command::new("nix-prefetch-url")
-            .args(["--print-path", url])
+        let mut command = Command::new("nix-prefetch-url");
+        command.args(["--print-path", url]);
+        if ARGS.quiet {
+            command.stderr(Stdio::null());
+        }
+        let stdout = command
             .stdout(Stdio::piped())
             .spawn()
             .map_err(Error::from)
@@ -36,8 +42,13 @@ impl FlakeRemote {
         Ok(metadata)
     }
     pub fn get_flake(flake: &str) -> Result<Self> {
-        let stdout = Command::new("nix")
-            .args(["flake", "prefetch", "--json", flake])
+        let mut command = Command::new("nix");
+        command.args(["flake", "prefetch", "--json", flake]);
+        if ARGS.quiet {
+            command.arg("--quiet");
+            command.stderr(Stdio::null());
+        }
+        let stdout = command
             .stdout(Stdio::piped())
             .spawn()
             .map_err(Error::from)

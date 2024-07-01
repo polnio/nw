@@ -12,6 +12,9 @@ pub fn shell(args: &ShellArgs) -> Result<()> {
     if ARGS.offline {
         command.arg("--offline");
     }
+    if ARGS.quiet {
+        command.arg("--quiet");
+    }
     command.args(packages);
     command.args(["-c", subcommand]);
     command

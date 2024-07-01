@@ -34,7 +34,15 @@ pub fn list_update(args: &FlakeUpdateArgs) -> Result<()> {
 
     let to_update = handles
         .filter_map(|(name, locked, handle)| {
-            let remote = handle.join().unwrap().map_err(errors::print_error).ok()?;
+            let remote = handle
+                .join()
+                .unwrap()
+                .map_err(|e| {
+                    if !ARGS.quiet {
+                        errors::print_error(e);
+                    }
+                })
+                .ok()?;
             (locked?.hash != remote.hash).then_some(name)
         })
         .collect::<Vec<_>>();

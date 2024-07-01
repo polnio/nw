@@ -1,6 +1,6 @@
 use crate::utils::args::{FlakeUpdateArgs, ARGS};
 use anyhow::{Context as _, Result};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 pub fn update(args: &FlakeUpdateArgs) -> Result<()> {
     if ARGS.offline {
@@ -12,6 +12,10 @@ pub fn update(args: &FlakeUpdateArgs) -> Result<()> {
     command.args(["flake", "update"]);
     if let Some(flake) = &args.flake {
         command.arg(flake);
+    }
+    if ARGS.quiet {
+        command.stdout(Stdio::null());
+        command.stderr(Stdio::null());
     }
     command
         .spawn()

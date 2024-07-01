@@ -10,6 +10,9 @@ pub fn run(args: &RunArgs) -> Result<()> {
     if ARGS.offline {
         command.arg("--offline");
     }
+    if ARGS.quiet {
+        command.arg("--quiet");
+    }
     if !args.args.is_empty() {
         command.arg("--").args(&args.args);
     }

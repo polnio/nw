@@ -1,3 +1,4 @@
+use crate::utils::args::ARGS;
 use anyhow::{Context as _, Error, Result};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -72,6 +73,10 @@ impl FlakeMetadata {
         command.args(["flake", "metadata", "--json"]);
         if !flake.is_empty() {
             command.arg(flake);
+        }
+        if ARGS.quiet {
+            command.arg("--quiet");
+            command.stderr(Stdio::null());
         }
         let stdout = command
             .stdout(Stdio::piped())
