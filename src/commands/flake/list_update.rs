@@ -32,10 +32,12 @@ pub fn list_update(args: &FlakeUpdateArgs) -> Result<()> {
         Some((name, node.locked, handle))
     });
 
-    let to_update = handles.filter_map(|(name, locked, handle)| {
-        let remote = handle.join().unwrap().map_err(errors::print_error).ok()?;
-        (locked?.hash != remote.hash).then_some(name)
-    });
+    let to_update = handles
+        .filter_map(|(name, locked, handle)| {
+            let remote = handle.join().unwrap().map_err(errors::print_error).ok()?;
+            (locked?.hash != remote.hash).then_some(name)
+        })
+        .collect::<Vec<_>>();
 
     for name in to_update {
         println!("{}", name);
