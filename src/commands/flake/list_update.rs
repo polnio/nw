@@ -21,7 +21,7 @@ pub fn list_update(args: &FlakeUpdateArgs) -> Result<()> {
             return None;
         };
         let is_flake = !matches!(flake, FlakeMetadataLocksNodesOriginal::File(_));
-        let flake: String = flake.into();
+        let flake: String = flake.try_into().ok()?;
         let handle = std::thread::spawn(move || {
             if is_flake {
                 FlakeRemote::get_flake(&flake)

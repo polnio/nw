@@ -1,5 +1,6 @@
+use super::registry::FlakeRegistry;
 use crate::utils::args::ARGS;
-use anyhow::{Context as _, Error, Result};
+use anyhow::{bail, Context as _, Error, Result};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::process::{Command, Stdio};
@@ -26,20 +27,31 @@ pub enum FlakeMetadataLocksNodesOriginal {
     Github(FlakeMetadataLocksNodesOriginalGithub),
     Tarball(FlakeMetadataLocksNodesOriginalTarball),
     File(FlakeMetadataLocksNodesOriginalFile),
+    Indirect(FlakeMetadataLocksNodesOriginalIndirect),
 }
 
-impl Into<String> for FlakeMetadataLocksNodesOriginal {
-    fn into(self) -> String {
+impl TryInto<String> for FlakeMetadataLocksNodesOriginal {
+    type Error = Error;
+    fn try_into(self) -> Result<String> {
         match self {
             FlakeMetadataLocksNodesOriginal::Github(original) => {
                 if let Some(ref r#ref) = original.r#ref {
-                    format!("github:{}/{}/{}", original.owner, original.repo, r#ref)
+                    Ok(format!(
+                        "github:{}/{}/{}",
+                        original.owner, original.repo, r#ref
+                    ))
                 } else {
-                    format!("github:{}/{}", original.owner, original.repo)
+                    Ok(format!("github:{}/{}", original.owner, original.repo))
                 }
             }
-            FlakeMetadataLocksNodesOriginal::Tarball(original) => original.url,
-            FlakeMetadataLocksNodesOriginal::File(original) => original.url,
+            FlakeMetadataLocksNodesOriginal::Tarball(original) => Ok(original.url),
+            FlakeMetadataLocksNodesOriginal::File(original) => Ok(original.url),
+            FlakeMetadataLocksNodesOriginal::Indirect(original) => {
+                let Some(registry) = FlakeRegistry::get(&original.id)? else {
+                    bail!("Failed to find flake registry");
+                };
+                Ok(registry.path)
+            }
         }
     }
 }
@@ -59,6 +71,11 @@ pub struct FlakeMetadataLocksNodesOriginalTarball {
 #[derive(Deserialize)]
 pub struct FlakeMetadataLocksNodesOriginalFile {
     pub url: String,
+}
+
+#[derive(Deserialize)]
+pub struct FlakeMetadataLocksNodesOriginalIndirect {
+    pub id: String,
 }
 
 #[derive(Deserialize)]
