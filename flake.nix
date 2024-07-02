@@ -18,7 +18,6 @@
       ];
       perSystem = { pkgs, system, ... }:
         let
-          # toolchain = fenix.packages.${system}.minimal.toolchain;
           fenix-packages = fenix.packages.${system};
           toolchain = fenix-packages.fromToolchainFile {
             file = ./rust-toolchain.toml;
@@ -34,9 +33,14 @@
             version = "0.1.0";
             src = ./.;
             cargoLock.lockFile = ./Cargo.lock;
-            nativeBuildInputs = with pkgs; [ pkg-config ];
+            nativeBuildInputs = with pkgs; [ pkg-config makeWrapper ];
             LD_LIBRARY_PATH = with pkgs; lib.makeLibraryPath [ openssl ];
             PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+            postFixup = ''
+              wrapProgram $out/bin/nw --prefix LD_LIBRARY_PATH : ${
+                pkgs.lib.makeLibraryPath [ pkgs.openssl ]
+              }
+            '';
           };
         };
     };
