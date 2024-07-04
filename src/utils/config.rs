@@ -90,15 +90,9 @@ impl From<ConfigInternal> for Config {
 
 impl Config {
     fn new() -> Result<Self> {
-        let config_path = XDG_DIRS
-            .place_config_file("config.toml")
-            .and_then(|config_path| {
-                if !config_path.exists() {
-                    File::create(&config_path)?;
-                }
-                Ok(config_path)
-            })
-            .context("Failed to create config file")?;
+        let Some(config_path) = XDG_DIRS.find_config_file("config.toml") else {
+            return Ok(ConfigInternal::default().into());
+        };
 
         let content = std::fs::read_to_string(config_path).context("Failed to open config file")?;
         let config: ConfigInternal =

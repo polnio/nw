@@ -116,6 +116,7 @@ pub fn derive_optionnal(input: proc_macro::TokenStream) -> proc_macro::TokenStre
             }
         }
         #derives
+        #[derive(Default)]
         struct #internal_name {
             #new_fields
         }
