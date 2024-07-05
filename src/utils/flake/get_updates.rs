@@ -1,4 +1,4 @@
-use super::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
+use super::metadata::FlakeMetadata;
 use super::remote::FlakeRemote;
 use crate::utils::args::ARGS;
 use crate::utils::errors;
@@ -20,15 +20,8 @@ pub fn get_updates(flake: Option<&str>) -> Result<Vec<String>> {
             let Some(flake) = node.original else {
                 return None;
             };
-            let is_flake = !matches!(flake, FlakeMetadataLocksNodesOriginal::File(_));
             let flake: String = flake.try_into().ok()?;
-            let handle = std::thread::spawn(move || {
-                if is_flake {
-                    FlakeRemote::get_flake(&flake)
-                } else {
-                    FlakeRemote::get_url(&flake)
-                }
-            });
+            let handle = std::thread::spawn(move || FlakeRemote::get(&flake));
             Some((name, node.locked, handle))
         })
         .collect::<Vec<_>>();

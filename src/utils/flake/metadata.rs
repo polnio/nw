@@ -47,7 +47,10 @@ impl TryInto<String> for FlakeMetadataLocksNodesOriginal {
                 }
             }
             FlakeMetadataLocksNodesOriginal::Tarball(original) => Ok(original.url),
-            FlakeMetadataLocksNodesOriginal::File(original) => Ok(original.url),
+            FlakeMetadataLocksNodesOriginal::File(original) if original.url.contains("://") => {
+                Ok(format!("file+{}", original.url))
+            }
+            FlakeMetadataLocksNodesOriginal::File(original) => Ok(format!("file:{}", original.url)),
             FlakeMetadataLocksNodesOriginal::Indirect(original) => {
                 let Some(registry) = FlakeRegistry::get(&original.id)? else {
                     bail!("Failed to find flake registry");
