@@ -20,6 +20,7 @@ pub enum Command {
     Shell(ShellArgs),
     Run(RunArgs),
     Flake(FlakeArgs),
+    Os(OsArgs),
 }
 
 #[derive(clap::Args)]
@@ -62,4 +63,46 @@ pub struct FlakeUpdateArgs {
     pub flake: Option<String>,
     #[arg(short, long)]
     pub list: bool,
+}
+
+#[derive(clap::Args)]
+pub struct OsArgs {
+    #[command(subcommand)]
+    pub command: OsCommand,
+}
+
+#[derive(clap::Subcommand)]
+pub enum OsCommand {
+    Build(OsBuildArgs),
+    Update(OsUpdateArgs),
+}
+
+#[derive(clap::Args, Clone)]
+pub struct OsBuildArgs {
+    #[arg(short, long)]
+    pub update: bool,
+    #[arg(short, long)]
+    pub apply: bool,
+    #[arg(short, long)]
+    pub bootloader: bool,
+}
+
+impl From<OsUpdateArgs> for OsBuildArgs {
+    fn from(value: OsUpdateArgs) -> Self {
+        Self {
+            update: true,
+            apply: value.apply,
+            bootloader: value.bootloader,
+        }
+    }
+}
+
+#[derive(clap::Args)]
+pub struct OsUpdateArgs {
+    #[arg(short, long)]
+    pub list: bool,
+    #[arg(short, long)]
+    pub apply: bool,
+    #[arg(short, long)]
+    pub bootloader: bool,
 }

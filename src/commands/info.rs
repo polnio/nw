@@ -1,5 +1,6 @@
 use crate::utils::api;
-use crate::utils::args::{InfoArgs, ARGS};
+use crate::utils::args::InfoArgs;
+use crate::utils::no_offline;
 use anyhow::{Context, Result};
 use regex::Regex;
 use std::io::{stdout, Write};
@@ -19,10 +20,7 @@ fn parse_description(description: String) -> String {
 }
 
 pub fn info(args: &InfoArgs) -> Result<()> {
-    if ARGS.offline {
-        eprintln!("Offline mode is not supported");
-        std::process::exit(1);
-    }
+    no_offline!();
 
     let response = api::get_by_attr_name(args.package.clone())
         .context("Failed to fetch package informations")?;

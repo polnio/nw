@@ -4,7 +4,6 @@ use crate::utils::xdg::XDG_DIRS;
 use anyhow::{Context, Result};
 use nw_derive::Optional;
 use serde::Deserialize;
-use std::fs::File;
 use std::sync::LazyLock;
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| match Config::new() {
@@ -40,7 +39,7 @@ impl ConfigNix {
     fn default_channel(os_flake: &str) -> String {
         let channel: Result<String> = try {
             let mut metadata =
-                FlakeMetadata::get(os_flake).context("Failed to fetch flake metadata")?;
+                FlakeMetadata::get(Some(os_flake)).context("Failed to fetch flake metadata")?;
             let channel = metadata
                 .locks
                 .nodes

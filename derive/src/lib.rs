@@ -110,11 +110,6 @@ pub fn derive_optionnal(input: proc_macro::TokenStream) -> proc_macro::TokenStre
         }));
 
     let output: TokenStream = quote! {
-        impl #name {
-            fn hello() {
-                todo!()
-            }
-        }
         #derives
         #[derive(Default)]
         struct #internal_name {

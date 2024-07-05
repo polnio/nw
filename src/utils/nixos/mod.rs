@@ -1,8 +1,7 @@
+mod build;
 mod get_updates;
-pub mod metadata;
-pub mod registry;
-pub mod remote;
 mod update;
 
+pub use build::Builder;
 pub use get_updates::get_updates;
 pub use update::update;

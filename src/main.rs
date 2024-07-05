@@ -21,6 +21,17 @@ fn main() {
                 commands::flake::update(args).context("Failed to update flake inputs")
             }
         },
+        args::Command::Os(args) => match &args.command {
+            args::OsCommand::Build(args) => {
+                commands::os::build(args).context("Failed to build NixOS configuration")
+            }
+            args::OsCommand::Update(args) if args.list => {
+                commands::os::list_update(args).context("Failed to list os updates")
+            }
+            args::OsCommand::Update(args) => {
+                commands::os::update(args).context("Failed to update os")
+            }
+        },
     };
 
     if let Err(err) = result {

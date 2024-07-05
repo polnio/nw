@@ -85,10 +85,10 @@ pub struct FlakeMetadataLocksNodesLocked {
 }
 
 impl FlakeMetadata {
-    pub fn get(flake: &str) -> Result<Self> {
+    pub fn get(flake: Option<&str>) -> Result<Self> {
         let mut command = Command::new("nix");
         command.args(["flake", "metadata", "--json"]);
-        if !flake.is_empty() {
+        if let Some(flake) = flake {
             command.arg(flake);
         }
         if ARGS.quiet {

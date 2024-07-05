@@ -1,26 +1,13 @@
-use crate::utils::args::{FlakeUpdateArgs, ARGS};
-use anyhow::{Context as _, Result};
-use std::process::{Command, Stdio};
+use crate::utils::args::FlakeUpdateArgs;
+use crate::utils::flake;
+use crate::utils::no_offline;
+use anyhow::Context as _;
+use anyhow::Result;
 
 pub fn update(args: &FlakeUpdateArgs) -> Result<()> {
-    if ARGS.offline {
-        eprintln!("Offline mode is not supported");
-        std::process::exit(1);
-    }
+    no_offline!();
 
-    let mut command = Command::new("nix");
-    command.args(["flake", "update"]);
-    if let Some(flake) = &args.flake {
-        command.arg(flake);
-    }
-    if ARGS.quiet {
-        command.stdout(Stdio::null());
-        command.stderr(Stdio::null());
-    }
-    command
-        .spawn()
-        .and_then(|mut child| child.wait())
-        .context("Failed to run `nix flake update`")?;
+    flake::update(args.flake.as_deref()).context("Failed to update flake")?;
 
     Ok(())
 }

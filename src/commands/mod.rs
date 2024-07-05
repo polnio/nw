@@ -1,5 +1,6 @@
 pub mod flake;
 mod info;
+pub mod os;
 mod run;
 mod search;
 mod shell;
