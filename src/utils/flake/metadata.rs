@@ -2,6 +2,7 @@ use super::registry::FlakeRegistry;
 use crate::utils::args::ARGS;
 use anyhow::{bail, Context as _, Error, Result};
 use serde::Deserialize;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::process::{Command, Stdio};
 
@@ -17,6 +18,7 @@ pub struct FlakeMetadataLocks {
 
 #[derive(Deserialize)]
 pub struct FlakeMetadataLocksNode {
+    pub inputs: Option<HashMap<String, Value>>,
     pub original: Option<FlakeMetadataLocksNodesOriginal>,
     pub locked: Option<FlakeMetadataLocksNodesLocked>,
 }
@@ -113,5 +115,18 @@ impl FlakeMetadata {
         let metadata: Self =
             serde_json::from_reader(stdout).context("Failed to parse flake metadata")?;
         Ok(metadata)
+    }
+
+    pub fn inputs(&self) -> Vec<&String> {
+        let Some(root) = self.locks.nodes.get("root") else {
+            return Vec::new();
+        };
+
+        let Some(inputs) = &root.inputs else {
+            return Vec::new();
+        };
+
+        let inputs = inputs.keys().collect();
+        inputs
     }
 }

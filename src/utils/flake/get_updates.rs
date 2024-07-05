@@ -7,11 +7,16 @@ use anyhow::{Context as _, Result};
 pub fn get_updates(flake: Option<&str>) -> Result<Vec<String>> {
     let metadata = FlakeMetadata::get(flake).context("Failed to fetch flake metadata")?;
 
+    let inputs = metadata.inputs().into_iter().cloned().collect::<Vec<_>>();
+
     let handles = metadata
         .locks
         .nodes
         .into_iter()
         .filter_map(|(name, node)| {
+            if !inputs.contains(&name) {
+                return None;
+            }
             let Some(flake) = node.original else {
                 return None;
             };
