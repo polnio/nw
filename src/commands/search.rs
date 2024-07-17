@@ -6,7 +6,7 @@ use std::io::{stdout, Write};
 use tabwriter::TabWriter;
 
 pub fn search(args: &SearchArgs) -> Result<()> {
-    no_offline!();
+    no_offline();
 
     let packages = api::get_by_query(args.query.clone())?;
 

@@ -4,7 +4,7 @@ use crate::utils::no_offline;
 use anyhow::Result;
 
 pub fn list_update(args: &FlakeUpdateArgs) -> Result<()> {
-    no_offline!();
+    no_offline();
 
     let updates = flake::get_updates(args.flake.as_deref())?;
 

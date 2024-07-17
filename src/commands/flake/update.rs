@@ -5,7 +5,7 @@ use anyhow::Context as _;
 use anyhow::Result;
 
 pub fn update(args: &FlakeUpdateArgs) -> Result<()> {
-    no_offline!();
+    no_offline();
 
     flake::update(args.flake.as_deref()).context("Failed to update flake")?;
 

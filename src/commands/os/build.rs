@@ -5,7 +5,7 @@ use anyhow::Result;
 
 pub fn build(args: &OsBuildArgs) -> Result<()> {
     if args.update {
-        no_offline!();
+        no_offline();
         nixos::update()?;
     }
     let mut builder = nixos::Builder::new();

@@ -5,7 +5,7 @@ use anyhow::Context as _;
 use anyhow::Result;
 
 pub fn update(args: &OsUpdateArgs) -> Result<()> {
-    no_offline!();
+    no_offline();
 
     nixos::update().context("Failed to update nixos")?;
 

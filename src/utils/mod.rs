@@ -18,13 +18,9 @@ pub fn parse_package_name<T: AsRef<str>>(package: T) -> String {
     }
 }
 
-macro_rules! no_offline {
-    () => {
-        if crate::args::ARGS.offline {
-            eprintln!("Offline mode is not supported");
-            std::process::exit(1);
-        }
-    };
+pub fn no_offline() {
+    if crate::args::ARGS.offline {
+        eprintln!("Offline mode is not supported");
+        std::process::exit(1);
+    }
 }
-
-pub(crate) use no_offline;

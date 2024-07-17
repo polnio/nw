@@ -20,7 +20,7 @@ fn parse_description(description: String) -> String {
 }
 
 pub fn info(args: &InfoArgs) -> Result<()> {
-    no_offline!();
+    no_offline();
 
     let response = api::get_by_attr_name(args.package.clone())
         .context("Failed to fetch package informations")?;
