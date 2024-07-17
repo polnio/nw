@@ -7,12 +7,14 @@ pub mod http;
 pub mod nixos;
 pub mod xdg;
 
+use config::CONFIG;
+
 pub fn parse_package_name<T: AsRef<str>>(package: T) -> String {
     let package = package.as_ref();
     if package.contains('#') || package.contains(':') {
         package.into()
     } else {
-        format!("nixpkgs#{}", package)
+        format!("nixpkgs/{}#{}", CONFIG.nix.channel, package)
     }
 }
 

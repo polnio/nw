@@ -33,10 +33,11 @@ impl ConfigGeneral {
 #[derives(Deserialize)]
 pub struct ConfigNix {
     pub channel: String,
+    pub locked_channel: bool,
     pub os_flake: String,
 }
 impl ConfigNix {
-    fn default_channel(os_flake: &str) -> String {
+    fn default_channel(os_flake: &str, locked_channel: bool) -> String {
         let channel: Result<String> = try {
             let mut metadata =
                 FlakeMetadata::get(Some(os_flake)).context("Failed to fetch flake metadata")?;
@@ -44,9 +45,17 @@ impl ConfigNix {
                 .locks
                 .nodes
                 .remove("nixpkgs")
-                .and_then(|node| match node.original {
-                    Some(FlakeMetadataLocksNodesOriginal::Github(original)) => original.r#ref,
-                    _ => None,
+                .and_then(|node| {
+                    if locked_channel {
+                        node.locked.and_then(|locked| locked.rev)
+                    } else {
+                        match node.original {
+                            Some(FlakeMetadataLocksNodesOriginal::Github(original)) => {
+                                original.r#ref
+                            }
+                            _ => None,
+                        }
+                    }
                 })
                 .context("Failed to find nixpkgs chanel")?;
             channel
@@ -74,15 +83,21 @@ impl From<ConfigInternal> for Config {
             .unwrap_or_else(ConfigGeneral::default_shell);
 
         // Nix
-        let [channel, os_flake] = value
-            .nix
-            .map_or_else(Default::default, |n| [n.channel, n.os_flake]);
+        let (channel, locked_channel, os_flake) = value.nix.map_or_else(Default::default, |n| {
+            (n.channel, n.locked_channel, n.os_flake)
+        });
         let os_flake = os_flake.unwrap_or_else(ConfigNix::default_os_flake);
-        let channel = channel.unwrap_or_else(|| ConfigNix::default_channel(&os_flake));
+        let locked_channel = locked_channel.unwrap_or(true);
+        let channel =
+            channel.unwrap_or_else(|| ConfigNix::default_channel(&os_flake, locked_channel));
 
         Self {
             general: ConfigGeneral { shell },
-            nix: ConfigNix { channel, os_flake },
+            nix: ConfigNix {
+                channel,
+                locked_channel,
+                os_flake,
+            },
         }
     }
 }

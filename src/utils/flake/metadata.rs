@@ -87,6 +87,7 @@ pub struct FlakeMetadataLocksNodesOriginalIndirect {
 pub struct FlakeMetadataLocksNodesLocked {
     #[serde(rename = "narHash")]
     pub hash: String,
+    pub rev: Option<String>,
 }
 
 impl FlakeMetadata {
