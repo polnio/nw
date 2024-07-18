@@ -75,6 +75,7 @@ pub struct OsArgs {
 pub enum OsCommand {
     Build(OsBuildArgs),
     Update(OsUpdateArgs),
+    Clean(OsCleanArgs),
 }
 
 #[derive(clap::Args, Clone)]
@@ -103,6 +104,12 @@ pub struct OsUpdateArgs {
     pub list: bool,
     #[arg(short, long)]
     pub apply: bool,
+    #[arg(short, long)]
+    pub bootloader: bool,
+}
+
+#[derive(clap::Args)]
+pub struct OsCleanArgs {
     #[arg(short, long)]
     pub bootloader: bool,
 }

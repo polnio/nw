@@ -31,6 +31,7 @@ fn main() {
             args::OsCommand::Update(args) => {
                 commands::os::update(args).context("Failed to update os")
             }
+            args::OsCommand::Clean(args) => commands::os::clean(args).context("Failed to clean os"),
         },
     };
 
