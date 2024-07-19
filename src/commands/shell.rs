@@ -16,7 +16,7 @@ pub fn shell(args: &ShellArgs) -> Result<()> {
         command.arg("--quiet");
     }
     command.args(packages);
-    command.args(["-c", subcommand]);
+    command.args(["-c", &CONFIG.general.shell, "-c", subcommand]);
     command
         .spawn()
         .and_then(|mut child| child.wait())

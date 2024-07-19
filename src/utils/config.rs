@@ -23,6 +23,7 @@ pub struct Config {
 #[derives(Deserialize)]
 pub struct ConfigGeneral {
     pub shell: String,
+    pub interactive_shell: String,
 }
 impl ConfigGeneral {
     fn default_shell() -> String {
@@ -76,23 +77,26 @@ impl ConfigNix {
 
 impl From<ConfigInternal> for Config {
     fn from(value: ConfigInternal) -> Self {
-        // General
-        let shell = value
-            .general
-            .and_then(|g| g.shell)
-            .unwrap_or_else(ConfigGeneral::default_shell);
-
-        // Nix
-        let (channel, locked_channel, os_flake) = value.nix.map_or_else(Default::default, |n| {
-            (n.channel, n.locked_channel, n.os_flake)
+        let (shell, interactive_shell) = value.general.map_or_else(Default::default, |g| {
+            let shell = g.shell.unwrap_or_else(ConfigGeneral::default_shell);
+            let interactive_shell = g.interactive_shell.unwrap_or_else(|| shell.clone());
+            (shell, interactive_shell)
         });
-        let os_flake = os_flake.unwrap_or_else(ConfigNix::default_os_flake);
-        let locked_channel = locked_channel.unwrap_or(true);
-        let channel =
-            channel.unwrap_or_else(|| ConfigNix::default_channel(&os_flake, locked_channel));
+
+        let (channel, locked_channel, os_flake) = value.nix.map_or_else(Default::default, |n| {
+            let os_flake = n.os_flake.unwrap_or_else(ConfigNix::default_os_flake);
+            let locked_channel = n.locked_channel.unwrap_or(true);
+            let channel = n
+                .channel
+                .unwrap_or_else(|| ConfigNix::default_channel(&os_flake, locked_channel));
+            (channel, locked_channel, os_flake)
+        });
 
         Self {
-            general: ConfigGeneral { shell },
+            general: ConfigGeneral {
+                shell,
+                interactive_shell,
+            },
             nix: ConfigNix {
                 channel,
                 locked_channel,
