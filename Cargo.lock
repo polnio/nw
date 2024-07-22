@@ -787,7 +787,6 @@ dependencies = [
  "clap",
  "console",
  "elasticsearch-dsl",
- "nw-derive",
  "regex",
  "reqwest",
  "serde",
@@ -795,15 +794,6 @@ dependencies = [
  "tabwriter",
  "toml",
  "xdg",
-]
-
-[[package]]
-name = "nw-derive"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]

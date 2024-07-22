@@ -9,7 +9,7 @@ pub fn shell(args: &ShellArgs) -> Result<()> {
     let subcommand = args
         .command
         .as_ref()
-        .unwrap_or(&CONFIG.general.interactive_shell);
+        .unwrap_or_else(|| CONFIG.general().interactive_shell());
     let mut command = Command::new("nix");
     command.arg("shell");
     if ARGS.offline {
@@ -19,7 +19,7 @@ pub fn shell(args: &ShellArgs) -> Result<()> {
         command.arg("--quiet");
     }
     command.args(packages);
-    command.args(["-c", &CONFIG.general.shell, "-c", subcommand]);
+    command.args(["-c", &CONFIG.general().shell(), "-c", subcommand]);
     command
         .spawn()
         .and_then(|mut child| child.wait())

@@ -14,7 +14,7 @@ pub fn parse_package_name<T: AsRef<str>>(package: T) -> String {
     if package.contains('#') || package.contains(':') {
         package.into()
     } else {
-        format!("nixpkgs/{}#{}", CONFIG.nix.channel, package)
+        format!("nixpkgs/{}#{}", CONFIG.nix().channel(), package)
     }
 }
 

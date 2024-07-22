@@ -1,23 +1,12 @@
-[workspace]
-members = [".", "derive"]
-resolver = "2"
-
-[workspace.package]
+[package]
+name = "nw"
 version = "0.1.0"
 edition = "2021"
 authors = ["Po Co"]
 
-[package]
-name = "nw"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nw-derive = { path = "./derive" }
-
 anyhow = "1.0.86"
 clap = { version = "4.5.4", features = ["derive"] }
 console = "0.15.8"

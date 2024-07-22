@@ -31,7 +31,7 @@ pub struct ApiPackage {
 static API_URL: LazyLock<String> = LazyLock::new(|| {
     format!(
         "https://search.nixos.org/backend/latest-42-{}/_search",
-        CONFIG.nix.channel
+        CONFIG.nix().channel()
     )
 });
 

@@ -34,7 +34,7 @@ impl Builder {
             (true, true) => command.arg("switch"),
         };
 
-        command.args(["--flake", &CONFIG.nix.os_flake]);
+        command.args(["--flake", &CONFIG.nix().os_flake()]);
 
         if ARGS.quiet {
             command.stdout(Stdio::null());
