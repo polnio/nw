@@ -1,21 +1,15 @@
 use crate::utils::args::ARGS;
 use anyhow::{Context as _, Result};
-use std::process::{Command, Stdio};
+use subprocess::{Exec, NullFile};
 
 pub fn update(flake: Option<&str>) -> Result<()> {
-    let mut command = Command::new("nix");
-    command.args(["flake", "update"]);
+    let mut command = Exec::cmd("nix").args(&["flake", "update"]);
     if let Some(flake) = flake {
-        command.arg(flake);
+        command = command.arg(flake);
     }
     if ARGS.quiet {
-        command.stdout(Stdio::null());
-        command.stderr(Stdio::null());
+        command = command.stdout(NullFile).stderr(NullFile);
     }
-    command
-        .spawn()
-        .and_then(|mut child| child.wait())
-        .context("Failed to run `nix flake update`")?;
-
+    command.join().context("Failed to run `nix flake update`")?;
     Ok(())
 }

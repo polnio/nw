@@ -1,8 +1,8 @@
 use crate::utils::args::ARGS;
 use anyhow::{Context as _, Error, Result};
 use std::io::{BufRead as _, BufReader};
-use std::process::{Command, Stdio};
 use std::str::FromStr;
+use subprocess::{Exec, NullFile};
 
 pub struct FlakeRegistry {
     pub id: String,
@@ -29,22 +29,13 @@ impl FromStr for FlakeRegistryOwner {
 
 impl FlakeRegistry {
     pub fn get_all() -> Result<Vec<FlakeRegistry>> {
-        let mut command = Command::new("nix");
-        command.args(["registry", "list"]);
+        let mut command = Exec::cmd("nix").args(&["registry", "list"]);
         if ARGS.quiet {
-            command.arg("--quiet");
-            command.stderr(Stdio::null());
+            command = command.arg("--quiet").stderr(NullFile);
         }
-
         let stdout = command
-            .stdout(Stdio::piped())
-            .spawn()
-            .map_err(Error::from)
-            .and_then(|mut child| {
-                child.wait()?;
-                child.stdout.context("Failed to retrieve stdout")
-            })
-            .context("Failed to run `flake metadata`")?;
+            .stream_stdout()
+            .context("Failed to run `nix registry list`")?;
 
         let registries = BufReader::new(stdout)
             .lines()

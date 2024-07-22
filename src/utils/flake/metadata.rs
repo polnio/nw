@@ -4,7 +4,7 @@ use anyhow::{bail, Context as _, Error, Result};
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashMap;
-use std::process::{Command, Stdio};
+use subprocess::{Exec, NullFile};
 
 #[derive(Deserialize)]
 pub struct FlakeMetadata {
@@ -92,32 +92,18 @@ pub struct FlakeMetadataLocksNodesLocked {
 
 impl FlakeMetadata {
     pub fn get(flake: Option<&str>) -> Result<Self> {
-        let mut command = Command::new("nix");
-        command.args(["flake", "metadata", "--json"]);
+        let mut command = Exec::cmd("nix").args(&["flake", "metadata", "--json"]);
         if let Some(flake) = flake {
-            command.arg(flake);
+            command = command.arg(flake);
         }
         if ARGS.quiet {
-            command.arg("--quiet");
-            command.stderr(Stdio::null());
+            command = command.arg("--quiet").stderr(NullFile);
         }
         let stdout = command
-            .stdout(Stdio::piped())
-            .spawn()
-            .map_err(Error::from)
-            .and_then(|mut child| {
-                let status = child.wait()?;
-                if !status.success() {
-                    return Ok(None);
-                }
-                let stdout = child.stdout.context("Failed to retrieve stdout")?;
-                Ok(Some(stdout))
-            })
-            .context("Failed to run `flake metadata`")?
-            .context("Failed to run `flake metadata`")?;
+            .stream_stdout()
+            .context("Failed to run `nix flake metadata`")?;
 
-        let metadata: Self =
-            serde_json::from_reader(stdout).context("Failed to parse flake metadata")?;
+        let metadata = serde_json::from_reader(stdout).context("Failed to parse flake metadata")?;
         Ok(metadata)
     }
 

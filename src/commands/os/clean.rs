@@ -1,22 +1,16 @@
-use crate::utils::{
-    args::{OsCleanArgs, ARGS},
-    nixos,
-};
+use crate::utils::args::{OsCleanArgs, ARGS};
+use crate::utils::nixos;
 use anyhow::{bail, Context as _, Result};
-use std::process::{Command, Stdio};
+use subprocess::{Exec, NullFile};
 
 pub fn clean(args: &OsCleanArgs) -> Result<()> {
-    let mut command = Command::new("sudo");
-    command.args(["nix-collect-garbage", "-d"]);
-
+    let mut command = Exec::cmd("sudo").args(&["nix-collect-garbage", "-d"]);
     if ARGS.quiet {
-        command.arg("--quiet");
-        command.stdout(Stdio::null());
-        command.stderr(Stdio::null());
+        command = command.arg("--quiet").stdout(NullFile).stderr(NullFile);
     }
 
     let status = command
-        .status()
+        .join()
         .context("Failed to clean NixOS configuration")?;
 
     if !status.success() {
@@ -24,7 +18,10 @@ pub fn clean(args: &OsCleanArgs) -> Result<()> {
     }
 
     if args.bootloader {
-        nixos::Builder::new().bootloader().build()?;
+        nixos::Builder::new()
+            .bootloader()
+            .build()
+            .context("Failed to add to bootloader")?;
     }
 
     Ok(())
