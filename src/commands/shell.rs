@@ -6,7 +6,10 @@ use std::process::Command;
 
 pub fn shell(args: &ShellArgs) -> Result<()> {
     let packages = args.packages.iter().map(parse_package_name);
-    let subcommand = args.command.as_ref().unwrap_or(&CONFIG.general.shell);
+    let subcommand = args
+        .command
+        .as_ref()
+        .unwrap_or(&CONFIG.general.interactive_shell);
     let mut command = Command::new("nix");
     command.arg("shell");
     if ARGS.offline {
