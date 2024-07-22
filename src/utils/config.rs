@@ -1,3 +1,5 @@
+#[cfg(feature = "ui")]
+use super::args::ARGS;
 use super::errors::{abort, print_error};
 use super::flake::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
 use crate::utils::xdg::XDG_DIRS;
@@ -56,6 +58,8 @@ impl Config {
 pub struct ConfigGeneral {
     shell: OnceLock<String>,
     interactive_shell: OnceLock<String>,
+    #[cfg(feature = "ui")]
+    ui: OnceLock<bool>,
 }
 impl ConfigGeneral {
     pub fn shell(&self) -> &String {
@@ -64,6 +68,10 @@ impl ConfigGeneral {
     }
     pub fn interactive_shell(&self) -> &String {
         self.interactive_shell.get_or_init(|| self.shell().into())
+    }
+    #[cfg(feature = "ui")]
+    pub fn ui(&self) -> bool {
+        *self.ui.get_or_init(|| ARGS.ui)
     }
 }
 #[derive(Deserialize, Default)]

@@ -8,7 +8,13 @@
     };
   };
 
-  outputs = inputs@{ flake-parts, fenix, self, ... }:
+  outputs =
+    inputs@{
+      flake-parts,
+      fenix,
+      self,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
@@ -16,10 +22,17 @@
         # "x86_64-darwin"
         # "aarch64-darwin"
       ];
-      perSystem = { pkgs, system, ... }: {
-        packages.default =
-          import ./nix/package.nix { inherit pkgs system fenix; };
-      };
+      perSystem =
+        { pkgs, system, ... }:
+        {
+          packages = {
+            default = import ./nix/package.nix { inherit pkgs system fenix; };
+            with-ui = import ./nix/package.nix {
+              inherit pkgs system fenix;
+              withUi = true;
+            };
+          };
+        };
       flake = {
         nixosModules.default = import ./nix/nixos.nix self;
         homeManagerModules.default = import ./nix/hm.nix self;

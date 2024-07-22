@@ -1,5 +1,10 @@
 self:
-{ lib, pkgs, config, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
 let
   inherit (lib) types;
   inherit (lib.modules) mkIf;
@@ -7,18 +12,24 @@ let
 
   tomlFormat = pkgs.formats.toml { };
 
-  nw = self.packages.${pkgs.system}.default;
+  packages = self.packages.${pkgs.system};
   cfg = config.programs.nw;
-in {
+in
+{
   options.programs.nw = {
     enable = mkEnableOption "nw";
 
     package = mkOption {
       type = types.package;
-      default = nw;
-      defaultText =
-        literalExpression "inputs.nw.packages.${pkgs.system}.default";
+      default = if cfg.withUi then packages.with-ui else packages.default;
+      defaultText = literalExpression "inputs.nw.packages.${pkgs.system}.default";
       description = "The package to use.";
+    };
+
+    withUi = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Whether to include the UI.";
     };
 
     settings = mkOption {

@@ -19,3 +19,6 @@ subprocess = "0.2.9"
 tabwriter = "1.4.0"
 toml = "0.8.14"
 xdg = "2.5.2"
+
+[features]
+ui = []

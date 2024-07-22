@@ -39,6 +39,15 @@ impl Builder {
             command = command.stdout(NullFile).stderr(NullFile);
         }
 
+        #[cfg(feature = "ui")]
+        (if CONFIG.general().ui() {
+            (command.args(&["--log-format", "internal-json"]) | Exec::cmd("nom").arg("--json"))
+                .join()
+        } else {
+            command.join()
+        })
+        .context("Failed to build NixOS configuration")?;
+        #[cfg(not(feature = "ui"))]
         command
             .join()
             .context("Failed to build NixOS configuration")?;

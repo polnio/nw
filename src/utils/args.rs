@@ -11,6 +11,9 @@ pub struct Args {
     pub quiet: bool,
     #[arg(long, global = true)]
     pub offline: bool,
+    #[cfg(feature = "ui")]
+    #[arg(long, global = true)]
+    pub ui: bool,
 }
 
 #[derive(clap::Subcommand)]
