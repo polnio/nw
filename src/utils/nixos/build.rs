@@ -41,6 +41,11 @@ impl Builder {
 
         #[cfg(feature = "ui")]
         (if CONFIG.general().ui() {
+            // Avoid sudo prompt being captured by nix-output-monitor
+            Exec::cmd("sudo")
+                .arg("true")
+                .join()
+                .context("Failed to run sudo")?;
             (command
                 .args(&["--log-format", "internal-json"])
                 .stdout(Redirection::Pipe)
