@@ -8,8 +8,13 @@ use serde::Deserialize;
 use std::sync::LazyLock;
 
 #[derive(Deserialize)]
-pub struct ApiError {
-    pub message: String,
+pub struct ApiErrorResponse {
+    pub error: ApiErrorResponseError,
+    pub status: u16,
+}
+#[derive(Deserialize)]
+pub struct ApiErrorResponseError {
+    pub reason: String,
 }
 
 #[derive(Deserialize)]
@@ -45,9 +50,9 @@ fn fetch_api(query: Search) -> Result<Vec<ApiPackage>> {
         .context("Failed to fetch result from nixos.org")?;
 
     if !response.status().is_success() {
-        let message = response.json::<ApiError>().map_or(
+        let message = response.json::<ApiErrorResponse>().map_or(
             "An error occuried while fetching result from nixos.org".into(),
-            |error| error.message,
+            |response| response.error.reason,
         );
         bail!(message);
     }
