@@ -26,7 +26,13 @@ rustPlatform.buildRustPackage {
     pkg-config
     makeWrapper
   ];
-  buildInputs = pkgs.lib.optionals withUi (with pkgs; [ nix-output-monitor ]);
+  buildInputs = pkgs.lib.optionals withUi (
+    with pkgs;
+    [
+      nix-output-monitor
+      nvd
+    ]
+  );
   buildFeatures = pkgs.lib.optional withUi "ui";
   checkFeatures = [ "ui" ];
   LD_LIBRARY_PATH = libraries;

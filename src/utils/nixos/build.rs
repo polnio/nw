@@ -40,21 +40,42 @@ impl Builder {
         }
 
         (if CONFIG.general().ui() {
-            // Avoid sudo prompt being captured by nix-output-monitor
-            Exec::cmd("sudo")
-                .arg("true")
-                .join()
-                .context("Failed to run sudo")?;
-            (command
-                .args(&["--log-format", "internal-json"])
-                .stdout(Redirection::Pipe)
-                .stderr(Redirection::Merge)
-                | Exec::cmd("nom").arg("--json"))
-            .join()
+            try {
+                let old_system = &std::fs::read_link("/run/current-system")
+                    .context("Failed to read /run/current-system")?;
+                let old_system = old_system.to_str().unwrap();
+
+                // Avoid sudo prompt being captured by nix-output-monitor
+                Exec::cmd("sudo")
+                    .arg("true")
+                    .join()
+                    .context("Failed to run sudo")?;
+                let command = command
+                    .args(&["--log-format", "internal-json"])
+                    .stdout(Redirection::Pipe)
+                    .stderr(Redirection::Merge)
+                    | Exec::cmd("nom").arg("--json");
+                command
+                    .join()
+                    .context("Failed to build NixOS configuration")?;
+
+                let new_system = match (self.apply, self.bootloader) {
+                    (false, false) => "result",
+                    (false, true) => "/nix/var/nix/profiles/system",
+                    (true, _) => "/run/current-system",
+                };
+
+                Exec::cmd("nvd")
+                    .args(&["diff", old_system, new_system])
+                    .join()
+                    .context("Failed to run nvd")?;
+            }
         } else {
-            command.join()
-        })
-        .context("Failed to build NixOS configuration")?;
+            command
+                .join()
+                .map(|_| ())
+                .context("Failed to build NixOS configuration")
+        })?;
 
         Ok(())
     }
