@@ -7,7 +7,7 @@ use subprocess::{Exec, NullFile};
 pub struct FlakeRegistry {
     pub id: String,
     pub path: String,
-    pub owner: FlakeRegistryOwner,
+    // pub owner: FlakeRegistryOwner,
 }
 
 pub enum FlakeRegistryOwner {
@@ -42,13 +42,13 @@ impl FlakeRegistry {
             .filter_map(|line| {
                 let line = line.ok()?;
                 let mut parts = line.split_whitespace();
-                let owner = parts.next()?;
+                let _owner = parts.next()?;
                 let id = parts.next()?;
                 let path = parts.next()?;
                 Some(FlakeRegistry {
                     id: id.to_string(),
                     path: path.to_string(),
-                    owner: owner.parse().ok()?,
+                    // owner: owner.parse().ok()?,
                 })
             })
             .collect();

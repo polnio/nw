@@ -12,7 +12,7 @@ use std::sync::LazyLock;
 #[derive(Deserialize)]
 pub struct ApiErrorResponse {
     pub error: ApiErrorResponseError,
-    pub status: u16,
+    // pub status: u16,
 }
 #[derive(Deserialize)]
 pub struct ApiErrorResponseError {

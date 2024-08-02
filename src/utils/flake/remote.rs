@@ -7,7 +7,7 @@ use subprocess::{Exec, NullFile};
 #[serde(rename_all = "camelCase")]
 pub struct FlakeRemote {
     pub hash: String,
-    pub store_path: String,
+    // pub store_path: String,
 }
 
 impl FlakeRemote {
