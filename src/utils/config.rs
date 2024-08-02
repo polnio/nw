@@ -4,13 +4,13 @@ use super::errors::{abort, print_error};
 use super::flake::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
 use crate::utils::xdg::XDG_DIRS;
 use anyhow::{Context, Result};
+use derive_more::Deref;
 use serde::{Deserialize, Deserializer};
-use std::ops::Deref;
 use std::sync::LazyLock;
 
-pub struct OnceLock<T> {
-    value: std::sync::OnceLock<T>,
-}
+#[derive(Default, Deref)]
+pub struct OnceLock<T>(std::sync::OnceLock<T>);
+
 impl<'de, T: Deserialize<'de>> Deserialize<'de> for OnceLock<T> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let value = Option::<T>::deserialize(deserializer)?;
@@ -18,20 +18,7 @@ impl<'de, T: Deserialize<'de>> Deserialize<'de> for OnceLock<T> {
         if let Some(value) = value {
             let _ = lock.set(value);
         }
-        Ok(OnceLock { value: lock })
-    }
-}
-impl<T> Deref for OnceLock<T> {
-    type Target = std::sync::OnceLock<T>;
-    fn deref(&self) -> &Self::Target {
-        &self.value
-    }
-}
-impl<T> Default for OnceLock<T> {
-    fn default() -> Self {
-        Self {
-            value: std::sync::OnceLock::new(),
-        }
+        Ok(OnceLock(lock))
     }
 }
 
@@ -40,7 +27,7 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(|| match Config::new() {
     Err(err) => abort(err),
 });
 
-#[derive(Deserialize, Default)]
+#[derive(Default, Deserialize)]
 pub struct Config {
     general: OnceLock<ConfigGeneral>,
     nix: OnceLock<ConfigNix>,

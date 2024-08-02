@@ -91,16 +91,6 @@ pub struct OsBuildArgs {
     pub bootloader: bool,
 }
 
-impl From<OsUpdateArgs> for OsBuildArgs {
-    fn from(value: OsUpdateArgs) -> Self {
-        Self {
-            update: true,
-            apply: value.apply,
-            bootloader: value.bootloader,
-        }
-    }
-}
-
 #[derive(clap::Args)]
 pub struct OsUpdateArgs {
     #[arg(short, long)]
