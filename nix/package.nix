@@ -14,7 +14,7 @@
   pkg-config,
 
   # Options
-  withUi ? false,
+  withUI ? false,
 }:
 let
   inherit (lib) makeLibraryPath;
@@ -42,12 +42,12 @@ rustPlatform.buildRustPackage {
     pkg-config
     makeWrapper
   ];
-  buildInputs = lib.optionals withUi [
+  buildInputs = lib.optionals withUI [
     nix-output-monitor
     nvd
   ];
 
-  buildFeatures = lib.optionals withUi [ "ui" ];
+  buildFeatures = lib.optionals withUI [ "ui" ];
   checkFeatures = [ "ui" ];
 
   LD_LIBRARY_PATH = libraries;

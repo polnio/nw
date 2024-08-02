@@ -32,11 +32,11 @@
             default = pkgs.callPackage ./nix/package.nix { inherit fenix-pkgs; };
             without-ui = pkgs.callPackage ./nix/package.nix {
               inherit fenix-pkgs;
-              withUi = false;
+              withUI = false;
             };
             with-ui = pkgs.callPackage ./nix/package.nix {
               inherit fenix-pkgs;
-              withUi = true;
+              withUI = true;
             };
           };
         };

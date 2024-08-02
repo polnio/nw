@@ -21,12 +21,12 @@ in
 
     package = mkOption {
       type = types.package;
-      default = if cfg.withUi then packages.with-ui else packages.without-ui;
+      default = if cfg.withUI then packages.with-ui else packages.without-ui;
       defaultText = literalExpression "inputs.nw.packages.${pkgs.system}.default";
       description = "The package to use.";
     };
 
-    withUi = mkOption {
+    withUI = mkOption {
       type = types.bool;
       default = false;
       description = "Whether to include the UI.";
