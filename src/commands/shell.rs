@@ -15,10 +15,7 @@ pub fn shell(args: &ShellArgs) -> Result<()> {
         .as_ref()
         .unwrap_or_else(|| CONFIG.general().interactive_shell());
 
-    #[cfg(feature = "ui")]
     let mut command = Exec::cmd(if CONFIG.general().ui() { "nom" } else { "nix" }).args(&["shell"]);
-    #[cfg(not(feature = "ui"))]
-    let mut command = Exec::cmd("nix").args(&["shell"]);
 
     if ARGS.offline {
         command = command.arg("--offline");

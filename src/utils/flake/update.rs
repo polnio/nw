@@ -1,5 +1,4 @@
 use crate::utils::args::ARGS;
-#[cfg(feature = "ui")]
 use crate::utils::config::CONFIG;
 use anyhow::{Context as _, Result};
 use subprocess::{Exec, NullFile, Redirection};
@@ -15,20 +14,17 @@ pub fn update(flake: Option<&str>) -> Result<()> {
         command = command.stdout(NullFile).stderr(NullFile);
     }
 
-    #[cfg(feature = "ui")]
-    (if CONFIG.general().ui() {
-        (command
+    let result = if CONFIG.general().ui() {
+        let command = command
             .args(&["--log-format", "internal-json"])
             .stdout(Redirection::Pipe)
             .stderr(Redirection::Merge)
-            | Exec::cmd("nom").arg("--json"))
-        .join()
+            | Exec::cmd("nom").arg("--json");
+        command.join()
     } else {
         command.join()
-    })
-    .context("Failed to run `nix flake update`")?;
-    #[cfg(not(feature = "ui"))]
-    command.join().context("Failed to run `nix flake update`")?;
+    };
+    result.context("Failed to run `nix flake update`")?;
 
     Ok(())
 }

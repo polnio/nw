@@ -39,7 +39,6 @@ impl Builder {
             command = command.stdout(NullFile).stderr(NullFile);
         }
 
-        #[cfg(feature = "ui")]
         (if CONFIG.general().ui() {
             // Avoid sudo prompt being captured by nix-output-monitor
             Exec::cmd("sudo")
@@ -56,10 +55,6 @@ impl Builder {
             command.join()
         })
         .context("Failed to build NixOS configuration")?;
-        #[cfg(not(feature = "ui"))]
-        command
-            .join()
-            .context("Failed to build NixOS configuration")?;
 
         Ok(())
     }

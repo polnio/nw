@@ -73,6 +73,10 @@ impl ConfigGeneral {
     pub fn ui(&self) -> bool {
         *self.ui.get_or_init(|| ARGS.ui)
     }
+    #[cfg(not(feature = "ui"))]
+    pub fn ui(&self) -> bool {
+        false
+    }
 }
 #[derive(Deserialize, Default)]
 pub struct ConfigNix {
