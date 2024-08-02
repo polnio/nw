@@ -24,11 +24,18 @@
       ];
       perSystem =
         { pkgs, system, ... }:
+        let
+          fenix-pkgs = fenix.packages.${system};
+        in
         {
           packages = {
-            default = import ./nix/package.nix { inherit pkgs system fenix; };
-            with-ui = import ./nix/package.nix {
-              inherit pkgs system fenix;
+            default = pkgs.callPackage ./nix/package.nix { inherit fenix-pkgs; };
+            without-ui = pkgs.callPackage ./nix/package.nix {
+              inherit fenix-pkgs;
+              withUi = false;
+            };
+            with-ui = pkgs.callPackage ./nix/package.nix {
+              inherit fenix-pkgs;
               withUi = true;
             };
           };
