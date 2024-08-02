@@ -1,4 +1,6 @@
 use crate::utils::config::CONFIG;
+use crate::utils::errors::print_error;
+use crate::utils::flake::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
 use crate::utils::http::HTTP_CLIENT;
 use anyhow::{bail, Context, Result};
 use elasticsearch_dsl::{
@@ -34,9 +36,19 @@ pub struct ApiPackage {
 }
 
 static API_URL: LazyLock<String> = LazyLock::new(|| {
+    let channel = FlakeMetadata::get(Some(&CONFIG.nix().os_flake()))
+        .map_err(|err| print_error(err))
+        .ok()
+        .and_then(|mut metadata| metadata.locks.nodes.remove("nixpkgs"))
+        .and_then(|nixpkgs| nixpkgs.original)
+        .and_then(|original| match original {
+            FlakeMetadataLocksNodesOriginal::Github(original) => original.r#ref,
+            _ => None,
+        })
+        .unwrap_or("nixos-unstable".into());
     format!(
         "https://search.nixos.org/backend/latest-42-{}/_search",
-        CONFIG.nix().channel()
+        channel
     )
 });
 
