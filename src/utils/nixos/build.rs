@@ -1,7 +1,7 @@
 use crate::utils::args::ARGS;
 use crate::utils::config::CONFIG;
 use anyhow::{Context, Result};
-use subprocess::{Exec, NullFile};
+use subprocess::{Exec, NullFile, Redirection};
 
 pub struct Builder {
     apply: bool,
@@ -41,8 +41,12 @@ impl Builder {
 
         #[cfg(feature = "ui")]
         (if CONFIG.general().ui() {
-            (command.args(&["--log-format", "internal-json"]) | Exec::cmd("nom").arg("--json"))
-                .join()
+            (command
+                .args(&["--log-format", "internal-json"])
+                .stdout(Redirection::Pipe)
+                .stderr(Redirection::Merge)
+                | Exec::cmd("nom").arg("--json"))
+            .join()
         } else {
             command.join()
         })
