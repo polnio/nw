@@ -14,6 +14,9 @@ pub struct Args {
     #[cfg(feature = "ui")]
     #[arg(long, global = true)]
     pub ui: bool,
+    #[cfg(feature = "ui")]
+    #[arg(long, global = true)]
+    pub no_ui: bool,
 }
 
 #[derive(clap::Subcommand)]

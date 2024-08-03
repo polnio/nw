@@ -58,7 +58,13 @@ impl ConfigGeneral {
     }
     #[cfg(feature = "ui")]
     pub fn ui(&self) -> bool {
-        *self.ui.get_or_init(|| ARGS.ui)
+        if ARGS.ui {
+            true
+        } else if ARGS.no_ui {
+            false
+        } else {
+            *self.ui.get_or_init(|| false)
+        }
     }
     #[cfg(not(feature = "ui"))]
     pub fn ui(&self) -> bool {
