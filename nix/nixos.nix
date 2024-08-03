@@ -12,7 +12,7 @@ let
 
   tomlFormat = pkgs.formats.toml { };
 
-  packages = self.packages.${pkgs.system};
+  package = self.packages.${pkgs.system}.default;
   cfg = config.programs.nw;
 in
 {
@@ -21,7 +21,7 @@ in
 
     package = mkOption {
       type = types.package;
-      default = if cfg.withUI then packages.with-ui else packages.without-ui;
+      default = package.override { withUI = cfg.withUI; };
       defaultText = literalExpression "inputs.nw.packages.${pkgs.system}.default";
       description = "The package to use.";
     };

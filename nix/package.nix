@@ -17,7 +17,7 @@
   withUI ? false,
 }:
 let
-  inherit (lib) makeLibraryPath;
+  inherit (lib) makeLibraryPath makeBinPath;
 
   toolchain = fenix-pkgs.fromToolchainFile {
     file = ../rust-toolchain.toml;
@@ -28,11 +28,9 @@ let
     rustc = toolchain;
   };
 
-  libraries = makeLibraryPath ([ openssl ]);
-
   cargoConfig = builtins.fromTOML (builtins.readFile ../Cargo.toml);
 in
-rustPlatform.buildRustPackage {
+rustPlatform.buildRustPackage rec {
   pname = cargoConfig.package.name;
   version = cargoConfig.package.version;
   src = ../.;
@@ -50,9 +48,13 @@ rustPlatform.buildRustPackage {
   buildFeatures = lib.optionals withUI [ "ui" ];
   checkFeatures = [ "ui" ];
 
-  LD_LIBRARY_PATH = libraries;
+  LD_LIBRARY_PATH = makeLibraryPath [ openssl ];
   PKG_CONFIG_PATH = "${openssl.dev}/lib/pkgconfig";
+  PATH = makeBinPath [
+    nix-output-monitor
+    nvd
+  ];
   postFixup = ''
-    wrapProgram $out/bin/nw --prefix LD_LIBRARY_PATH : ${libraries}
+    wrapProgram $out/bin/nw --prefix LD_LIBRARY_PATH : ${LD_LIBRARY_PATH} --prefix PATH : ${PATH}
   '';
 }
