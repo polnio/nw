@@ -50,10 +50,12 @@ rustPlatform.buildRustPackage rec {
 
   LD_LIBRARY_PATH = makeLibraryPath [ openssl ];
   PKG_CONFIG_PATH = "${openssl.dev}/lib/pkgconfig";
-  PATH = makeBinPath [
-    nix-output-monitor
-    nvd
-  ];
+  PATH = makeBinPath (
+    lib.optionals withUI [
+      nix-output-monitor
+      nvd
+    ]
+  );
   postFixup = ''
     wrapProgram $out/bin/nw --prefix LD_LIBRARY_PATH : ${LD_LIBRARY_PATH} --prefix PATH : ${PATH}
   '';
