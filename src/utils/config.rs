@@ -51,7 +51,7 @@ pub struct ConfigGeneral {
 impl ConfigGeneral {
     pub fn shell(&self) -> &String {
         self.shell
-            .get_or_init(|| std::option_env!("SHELL").unwrap_or("bash").into())
+            .get_or_init(|| std::env::var("SHELL").unwrap_or("bash".into()))
     }
     pub fn interactive_shell(&self) -> &String {
         self.interactive_shell.get_or_init(|| self.shell().into())
