@@ -15,7 +15,13 @@ pub fn shell(args: &ShellArgs) -> Result<()> {
         .as_ref()
         .unwrap_or_else(|| CONFIG.general().interactive_shell());
 
-    let mut command = Exec::cmd(if CONFIG.general().ui() { "nom" } else { "nix" }).args(&["shell"]);
+    let mut command = Exec::cmd(if CONFIG.general().ui() { "nom" } else { "nix" });
+
+    if args.dev {
+        command = command.arg("develop")
+    } else {
+        command = command.arg("shell");
+    }
 
     if ARGS.offline {
         command = command.arg("--offline");

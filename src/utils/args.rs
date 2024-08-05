@@ -44,6 +44,8 @@ pub struct ShellArgs {
     pub packages: Vec<String>,
     #[arg(short, long)]
     pub command: Option<String>,
+    #[arg(short, long)]
+    pub dev: bool,
 }
 
 #[derive(clap::Args)]
