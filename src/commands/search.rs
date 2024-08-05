@@ -11,11 +11,11 @@ pub fn search(args: &SearchArgs) -> Result<()> {
     let packages = api::get_by_query(args.query.clone())?;
 
     let mut tw = TabWriter::new(stdout());
-    write!(&mut tw, "name\tversion\tdescription\n").context("Failed to print packages")?;
+    writeln!(&mut tw, "name\tversion\tdescription").context("Failed to print packages")?;
     for package in packages {
-        write!(
+        writeln!(
             &mut tw,
-            "{}\t{}\t{}\n",
+            "{}\t{}\t{}",
             package.attr_name,
             package.pversion,
             package.description.unwrap_or_default()

@@ -17,10 +17,7 @@ pub fn get_updates(flake: Option<&str>) -> Result<Vec<String>> {
             if !inputs.contains(&name) {
                 return None;
             }
-            let Some(flake) = node.original else {
-                return None;
-            };
-            let flake: String = flake.try_into().ok()?;
+            let flake: String = node.original?.try_into().ok()?;
             let handle = std::thread::spawn(move || FlakeRemote::get(&flake));
             Some((name, node.locked, handle))
         })

@@ -36,8 +36,8 @@ pub struct ApiPackage {
 }
 
 static API_URL: LazyLock<String> = LazyLock::new(|| {
-    let channel = FlakeMetadata::get(Some(&CONFIG.nix().os_flake()))
-        .map_err(|err| print_error(err))
+    let channel = FlakeMetadata::get(Some(CONFIG.nix().os_flake()))
+        .map_err(print_error)
         .ok()
         .and_then(|mut metadata| metadata.locks.nodes.remove("nixpkgs"))
         .and_then(|nixpkgs| nixpkgs.original)
