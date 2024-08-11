@@ -1,11 +1,14 @@
 use crate::utils::api;
 use crate::utils::args::InfoArgs;
+use crate::utils::config::CONFIG;
+use crate::utils::ext::TabledWidthExt;
 use crate::utils::no_offline;
 use anyhow::{Context, Result};
 use regex::Regex;
-use std::io::{stdout, Write};
 use std::sync::LazyLock;
-use tabwriter::TabWriter;
+use tabled::settings::peaker::PriorityMax;
+use tabled::settings::{Style, Width};
+use tabled::Table;
 
 static HTML_TAG_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"</?.+>").unwrap());
 
@@ -28,23 +31,29 @@ pub fn info(args: &InfoArgs) -> Result<()> {
         println!("The package {} does not exist", args.package);
         return Ok(());
     };
-    let mut tw = TabWriter::new(stdout());
-    write!(
-        tw,
-        "Name\t: {}\nVersion\t: {}\nDescription\t: {}\nHomepage\t: {}\nDeclaration\t: {}\n",
-        package.attr_name,
-        package.pversion,
-        package
-            .long_description
-            .map(parse_description)
-            .or(package.description)
-            .unwrap_or(console::style("No description found").italic().to_string()),
-        package.homepage.join(","),
-        package
-            .position
-            .unwrap_or(console::style("No declaration found").italic().to_string())
-    )
-    .context("Failed to print package informations")?;
-    tw.flush().context("Failed to print package informations")?;
+
+    let mut table = Table::from_iter([
+        ["Name", &package.attr_name],
+        ["Version", &package.pversion],
+        [
+            "Description",
+            &package
+                .long_description
+                .map(parse_description)
+                .or(package.description)
+                .unwrap_or_default(),
+        ],
+        ["Homepage", &package.homepage.join(",")],
+        ["Declaration", &package.position.unwrap_or_default()],
+    ]);
+
+    if CONFIG.general().ui() {
+        table.with(Style::rounded().remove_horizontals());
+    } else {
+        table.with(Style::ascii().remove_horizontal());
+    }
+    table.with(Width::wrap_terminal().priority(PriorityMax));
+    println!("{}", table);
+
     Ok(())
 }

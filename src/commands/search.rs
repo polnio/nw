@@ -1,28 +1,35 @@
 use crate::utils::api;
 use crate::utils::args::SearchArgs;
+use crate::utils::config::CONFIG;
+use crate::utils::ext::TabledWidthExt;
 use crate::utils::no_offline;
 use anyhow::{Context, Result};
-use std::io::{stdout, Write};
-use tabwriter::TabWriter;
+use tabled::settings::{peaker::PriorityMax, Style, Width};
+use tabled::Table;
 
 pub fn search(args: &SearchArgs) -> Result<()> {
     no_offline();
 
-    let packages = api::get_by_query(args.query.clone())?;
+    let packages = api::get_by_query(args.query.clone()).context("Failed to get packages")?;
 
-    let mut tw = TabWriter::new(stdout());
-    writeln!(&mut tw, "name\tversion\tdescription").context("Failed to print packages")?;
-    for package in packages {
-        writeln!(
-            &mut tw,
-            "{}\t{}\t{}",
-            package.attr_name,
-            package.pversion,
-            package.description.unwrap_or_default()
-        )
-        .context("Failed to print packages")?;
+    let cols = std::iter::once([
+        "Name".to_string(),
+        "Version".to_string(),
+        "Description".to_string(),
+    ]);
+    let rows = packages
+        .into_iter()
+        .map(|p| [p.attr_name, p.pversion, p.description.unwrap_or_default()]);
+
+    let mut table = Table::from_iter(cols.chain(rows));
+    if CONFIG.general().ui() {
+        table.with(Style::modern_rounded());
+    } else {
+        table.with(Style::ascii());
     }
-    tw.flush().context("Failed to print packages")?;
+
+    table.with(Width::wrap_terminal().priority(PriorityMax));
+    println!("{}", table);
 
     Ok(())
 }

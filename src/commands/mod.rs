@@ -1,9 +1,10 @@
-pub mod flake;
 mod info;
-pub mod os;
 mod run;
 mod search;
 mod shell;
+
+pub mod flake;
+pub mod os;
 
 pub use info::info;
 pub use run::run;
