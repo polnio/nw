@@ -28,7 +28,7 @@ pub fn search(args: &SearchArgs) -> Result<()> {
         table.with(Style::ascii());
     }
 
-    table.with(Width::wrap_terminal().priority(PriorityMax));
+    table.with(Width::wrap_terminal().priority(PriorityMax::new(false)));
     println!("{}", table);
 
     Ok(())

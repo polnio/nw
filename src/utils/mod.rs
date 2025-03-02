@@ -26,3 +26,11 @@ pub fn no_offline() {
         std::process::exit(1);
     }
 }
+
+macro_rules! try_block {
+    ($($token:tt)*) => {
+        (|| { $($token)* })()
+    };
+}
+
+pub(crate) use try_block;

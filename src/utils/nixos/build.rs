@@ -1,5 +1,5 @@
-use crate::utils::args::ARGS;
 use crate::utils::config::CONFIG;
+use crate::utils::{args::ARGS, try_block};
 use anyhow::{Context, Result};
 use subprocess::{Exec, NullFile, Redirection};
 
@@ -40,7 +40,7 @@ impl Builder {
         }
 
         (if CONFIG.general().ui() {
-            try {
+            try_block! {
                 let old_system = &std::fs::read_link("/run/current-system")
                     .context("Failed to read /run/current-system")?;
                 let old_system = old_system.to_str().unwrap();
@@ -69,6 +69,7 @@ impl Builder {
                     .args(&["diff", old_system, new_system])
                     .join()
                     .context("Failed to run nvd")?;
+                Ok(())
             }
         } else {
             command

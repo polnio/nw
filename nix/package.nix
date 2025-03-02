@@ -1,10 +1,7 @@
 {
-  # Inputs
-  fenix-pkgs,
-
   # Functions
   lib,
-  makeRustPlatform,
+  rustPlatform,
   makeWrapper,
 
   # Packages
@@ -18,15 +15,6 @@
 }:
 let
   inherit (lib) makeLibraryPath makeBinPath;
-
-  toolchain = fenix-pkgs.fromToolchainFile {
-    file = ../rust-toolchain.toml;
-    sha256 = "sha256-5yj6HOitbmoFFbdLiXy3Uu+rZVhHzJPhOqV5l6nuDZQ=";
-  };
-  rustPlatform = makeRustPlatform {
-    cargo = toolchain;
-    rustc = toolchain;
-  };
 
   cargoConfig = builtins.fromTOML (builtins.readFile ../Cargo.toml);
 in
@@ -50,6 +38,7 @@ rustPlatform.buildRustPackage rec {
 
   LD_LIBRARY_PATH = makeLibraryPath [ openssl ];
   PKG_CONFIG_PATH = "${openssl.dev}/lib/pkgconfig";
+  RUST_SRC_PATH = rustPlatform.rustLibSrc;
   PATH = makeBinPath (
     lib.optionals withUI [
       nix-output-monitor

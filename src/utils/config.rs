@@ -2,6 +2,7 @@
 use super::args::ARGS;
 use super::errors::{abort, print_error};
 use super::flake::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
+use crate::utils::try_block;
 use crate::utils::xdg::XDG_DIRS;
 use anyhow::{Context, Result};
 use derive_more::Deref;
@@ -80,7 +81,7 @@ pub struct ConfigNix {
 impl ConfigNix {
     pub fn channel(&self) -> &String {
         self.channel.get_or_init(|| {
-            let channel: Result<String> = try {
+            let channel: Result<String> = try_block! {
                 let mut metadata = FlakeMetadata::get(Some(self.os_flake()))
                     .context("Failed to fetch flake metadata")?;
                 let channel = metadata
@@ -100,7 +101,7 @@ impl ConfigNix {
                         }
                     })
                     .context("Failed to find nixpkgs chanel")?;
-                channel
+                Ok(channel)
             };
             match channel.context("Failed to retrieve nixos channel") {
                 Ok(channel) => channel,

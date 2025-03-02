@@ -52,7 +52,7 @@ pub fn info(args: &InfoArgs) -> Result<()> {
     } else {
         table.with(Style::ascii().remove_horizontal());
     }
-    table.with(Width::wrap_terminal().priority(PriorityMax));
+    table.with(Width::wrap_terminal().priority(PriorityMax::new(false)));
     println!("{}", table);
 
     Ok(())

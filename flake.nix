@@ -5,16 +5,11 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
     inputs@{
       flake-parts,
-      fenix,
       self,
       ...
     }:
@@ -27,18 +22,13 @@
       ];
       perSystem =
         { pkgs, system, ... }:
-        let
-          fenix-pkgs = fenix.packages.${system};
-        in
         {
           packages = {
-            default = pkgs.callPackage ./nix/package.nix { inherit fenix-pkgs; };
+            default = pkgs.callPackage ./nix/package.nix { };
             without-ui = pkgs.callPackage ./nix/package.nix {
-              inherit fenix-pkgs;
               withUI = false;
             };
             with-ui = pkgs.callPackage ./nix/package.nix {
-              inherit fenix-pkgs;
               withUI = true;
             };
           };
