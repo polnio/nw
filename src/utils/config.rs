@@ -50,11 +50,11 @@ pub struct ConfigGeneral {
     ui: OnceLock<bool>,
 }
 impl ConfigGeneral {
-    pub fn shell(&self) -> &String {
+    pub fn shell(&self) -> &str {
         self.shell
             .get_or_init(|| std::env::var("SHELL").unwrap_or("bash".into()))
     }
-    pub fn interactive_shell(&self) -> &String {
+    pub fn interactive_shell(&self) -> &str {
         self.interactive_shell.get_or_init(|| self.shell().into())
     }
     #[cfg(feature = "ui")]
@@ -79,7 +79,7 @@ pub struct ConfigNix {
     os_flake: OnceLock<String>,
 }
 impl ConfigNix {
-    pub fn channel(&self) -> &String {
+    pub fn channel(&self) -> &str {
         self.channel.get_or_init(|| {
             let channel: Result<String> = try_block! {
                 let mut metadata = FlakeMetadata::get(Some(self.os_flake()))
@@ -117,7 +117,7 @@ impl ConfigNix {
         *self.locked_channel.get_or_init(|| true)
     }
 
-    pub fn os_flake(&self) -> &String {
+    pub fn os_flake(&self) -> &str {
         self.os_flake.get_or_init(|| "/etc/nixos".into())
     }
 }

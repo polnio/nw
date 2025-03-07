@@ -12,7 +12,7 @@ pub fn shell(args: &ShellArgs) -> Result<()> {
         .collect::<Vec<_>>();
     let subcommand = args
         .command
-        .as_ref()
+        .as_deref()
         .unwrap_or_else(|| CONFIG.general().interactive_shell());
 
     let mut command = Exec::cmd(if CONFIG.general().ui() { "nom" } else { "nix" });

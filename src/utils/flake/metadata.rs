@@ -125,7 +125,7 @@ impl FlakeMetadata {
         Ok(metadata)
     }
 
-    pub fn inputs(&self) -> Vec<&String> {
+    pub fn inputs(&self) -> Vec<&str> {
         let Some(root) = self.locks.nodes.get("root") else {
             return Vec::new();
         };
@@ -134,7 +134,7 @@ impl FlakeMetadata {
             return Vec::new();
         };
 
-        let inputs = inputs.keys().collect();
+        let inputs = inputs.keys().map(String::as_str).collect();
         inputs
     }
 }
