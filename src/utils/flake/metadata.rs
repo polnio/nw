@@ -27,25 +27,36 @@ pub struct FlakeMetadataLocksNode {
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum FlakeMetadataLocksNodesOriginal {
     Github(FlakeMetadataLocksNodesOriginalGithub),
+    SourceHut(FlakeMetadataLocksNodesOriginalSourceHut),
     Tarball(FlakeMetadataLocksNodesOriginalTarball),
     File(FlakeMetadataLocksNodesOriginalFile),
     Indirect(FlakeMetadataLocksNodesOriginalIndirect),
+}
+
+fn parse_git(provider: &str, owner: &str, repo: &str, r#ref: Option<&str>) -> String {
+    if let Some(ref r#ref) = r#ref {
+        format!("{}:{}/{}/{}", provider, owner, repo, r#ref)
+    } else {
+        format!("{}:{}/{}", provider, owner, repo)
+    }
 }
 
 impl TryInto<String> for FlakeMetadataLocksNodesOriginal {
     type Error = Error;
     fn try_into(self) -> Result<String> {
         match self {
-            FlakeMetadataLocksNodesOriginal::Github(original) => {
-                if let Some(ref r#ref) = original.r#ref {
-                    Ok(format!(
-                        "github:{}/{}/{}",
-                        original.owner, original.repo, r#ref
-                    ))
-                } else {
-                    Ok(format!("github:{}/{}", original.owner, original.repo))
-                }
-            }
+            FlakeMetadataLocksNodesOriginal::Github(original) => Ok(parse_git(
+                "github",
+                &original.owner,
+                &original.repo,
+                original.r#ref.as_deref(),
+            )),
+            FlakeMetadataLocksNodesOriginal::SourceHut(original) => Ok(parse_git(
+                "sourcehut",
+                &original.owner,
+                &original.repo,
+                original.r#ref.as_deref(),
+            )),
             FlakeMetadataLocksNodesOriginal::Tarball(original) => Ok(original.url),
             FlakeMetadataLocksNodesOriginal::File(original) if original.url.contains("://") => {
                 Ok(format!("file+{}", original.url))
@@ -63,6 +74,13 @@ impl TryInto<String> for FlakeMetadataLocksNodesOriginal {
 
 #[derive(Deserialize)]
 pub struct FlakeMetadataLocksNodesOriginalGithub {
+    pub owner: String,
+    pub repo: String,
+    pub r#ref: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct FlakeMetadataLocksNodesOriginalSourceHut {
     pub owner: String,
     pub repo: String,
     pub r#ref: Option<String>,
