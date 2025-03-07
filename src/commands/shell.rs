@@ -24,7 +24,7 @@ pub fn shell(args: &ShellArgs) -> Result<()> {
     }
 
     if ARGS.offline {
-        command = command.arg("--offline");
+        command = command.args(&["--offline", "--no-net"])
     }
     if ARGS.quiet {
         command = command.arg("--quiet");

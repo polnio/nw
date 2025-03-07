@@ -18,7 +18,7 @@ pub fn run(args: &RunArgs) -> Result<()> {
 
     let mut command = Exec::cmd("nix").args(&["run", &package]);
     if ARGS.offline {
-        command = command.arg("--offline");
+        command = command.args(&["--offline", "--no-net"])
     }
     if ARGS.quiet {
         command = command.arg("--quiet");
