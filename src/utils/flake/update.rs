@@ -7,7 +7,7 @@ pub fn update(flake: Option<&str>) -> Result<()> {
     let mut command = Exec::cmd("nix").args(&["flake", "update"]);
 
     if let Some(flake) = flake {
-        command = command.arg(flake);
+        command = command.args(&["--flake", flake]);
     }
 
     if ARGS.quiet {
