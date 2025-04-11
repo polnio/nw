@@ -15,11 +15,11 @@ impl Builder {
             bootloader: false,
         }
     }
-    pub fn apply(&mut self) -> &Self {
+    pub fn apply(mut self) -> Self {
         self.apply = true;
         self
     }
-    pub fn bootloader(&mut self) -> &Self {
+    pub fn bootloader(mut self) -> Self {
         self.bootloader = true;
         self
     }

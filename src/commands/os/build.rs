@@ -10,10 +10,10 @@ pub fn build(args: &OsBuildArgs) -> Result<()> {
     }
     let mut builder = nixos::Builder::new();
     if args.apply {
-        builder.apply();
+        builder = builder.apply();
     }
     if args.bootloader {
-        builder.bootloader();
+        builder = builder.bootloader();
     }
     builder.build()?;
 
