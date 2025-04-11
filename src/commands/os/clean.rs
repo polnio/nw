@@ -20,6 +20,8 @@ pub fn clean(args: &OsCleanArgs) -> Result<()> {
     if args.bootloader {
         nixos::Builder::new()
             .bootloader()
+            .quiet()
+            .offline()
             .build()
             .context("Failed to add to bootloader")?;
     }

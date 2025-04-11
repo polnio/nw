@@ -6,6 +6,8 @@ use subprocess::{Exec, NullFile, Redirection};
 pub struct Builder {
     apply: bool,
     bootloader: bool,
+    quiet: bool,
+    offline: bool,
 }
 
 impl Builder {
@@ -13,6 +15,8 @@ impl Builder {
         Self {
             apply: false,
             bootloader: false,
+            quiet: ARGS.quiet,
+            offline: ARGS.offline,
         }
     }
     pub fn apply(mut self) -> Self {
@@ -21,6 +25,14 @@ impl Builder {
     }
     pub fn bootloader(mut self) -> Self {
         self.bootloader = true;
+        self
+    }
+    pub fn quiet(mut self) -> Self {
+        self.quiet = true;
+        self
+    }
+    pub fn offline(mut self) -> Self {
+        self.offline = true;
         self
     }
 
@@ -35,8 +47,12 @@ impl Builder {
 
         command = command.args(&["--flake", CONFIG.nix().os_flake()]);
 
-        if ARGS.quiet {
+        if self.quiet {
             command = command.stdout(NullFile).stderr(NullFile);
+        }
+
+        if self.offline {
+            command = command.args(&["--offline", "--no-net"])
         }
 
         (if CONFIG.general().ui() {
