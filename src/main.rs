@@ -11,6 +11,7 @@ fn main() {
         args::Command::Shell(args) => commands::shell(args).context("Failed to start shell"),
         args::Command::Search(args) => commands::search(args).context("Failed to search package"),
         args::Command::Info(args) => commands::info(args).context("Failed to fetch package info"),
+        args::Command::Locate(args) => commands::locate(args).context("Failed to locate package"),
         args::Command::Flake(args) => match &args.command {
             args::FlakeCommand::Update(args) if args.list => {
                 commands::flake::list_update(args).context("Failed to list flake updates")

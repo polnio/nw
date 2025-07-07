@@ -5,6 +5,7 @@
   makeWrapper,
 
   # Packages
+  nix-index,
   nix-output-monitor,
   nvd,
   openssl,
@@ -28,10 +29,14 @@ rustPlatform.buildRustPackage rec {
     pkg-config
     makeWrapper
   ];
-  buildInputs = lib.optionals withUI [
-    nix-output-monitor
-    nvd
-  ];
+  buildInputs =
+    [
+      nix-index
+    ]
+    ++ (lib.optionals withUI [
+      nix-output-monitor
+      nvd
+    ]);
 
   buildFeatures = lib.optionals withUI [ "ui" ];
   checkFeatures = [ "ui" ];

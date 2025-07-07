@@ -23,6 +23,7 @@ pub struct Args {
 pub enum Command {
     Search(SearchArgs),
     Info(InfoArgs),
+    Locate(LocateArgs),
     Shell(ShellArgs),
     Run(RunArgs),
     Flake(FlakeArgs),
@@ -37,6 +38,11 @@ pub struct SearchArgs {
 #[derive(clap::Args)]
 pub struct InfoArgs {
     pub package: String,
+}
+
+#[derive(clap::Args)]
+pub struct LocateArgs {
+    pub query: String,
 }
 
 #[derive(clap::Args)]
