@@ -26,6 +26,7 @@ pub struct FlakeMetadataLocksNode {
 #[derive(Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum FlakeMetadataLocksNodesOriginal {
+    Git(FlakeMetadataLocksNodesOriginalGit),
     Github(FlakeMetadataLocksNodesOriginalGithub),
     SourceHut(FlakeMetadataLocksNodesOriginalSourceHut),
     Tarball(FlakeMetadataLocksNodesOriginalTarball),
@@ -45,24 +46,25 @@ impl TryInto<String> for FlakeMetadataLocksNodesOriginal {
     type Error = Error;
     fn try_into(self) -> Result<String> {
         match self {
-            FlakeMetadataLocksNodesOriginal::Github(original) => Ok(parse_git(
+            Self::Git(original) => Ok(format!("git+{}", original.url)),
+            Self::Github(original) => Ok(parse_git(
                 "github",
                 &original.owner,
                 &original.repo,
                 original.r#ref.as_deref(),
             )),
-            FlakeMetadataLocksNodesOriginal::SourceHut(original) => Ok(parse_git(
+            Self::SourceHut(original) => Ok(parse_git(
                 "sourcehut",
                 &original.owner,
                 &original.repo,
                 original.r#ref.as_deref(),
             )),
-            FlakeMetadataLocksNodesOriginal::Tarball(original) => Ok(original.url),
-            FlakeMetadataLocksNodesOriginal::File(original) if original.url.contains("://") => {
+            Self::Tarball(original) => Ok(original.url),
+            Self::File(original) if original.url.contains("://") => {
                 Ok(format!("file+{}", original.url))
             }
-            FlakeMetadataLocksNodesOriginal::File(original) => Ok(format!("file:{}", original.url)),
-            FlakeMetadataLocksNodesOriginal::Indirect(original) => {
+            Self::File(original) => Ok(format!("file:{}", original.url)),
+            Self::Indirect(original) => {
                 let Some(registry) = FlakeRegistry::get(&original.id)? else {
                     bail!("Failed to find flake registry");
                 };
@@ -70,6 +72,11 @@ impl TryInto<String> for FlakeMetadataLocksNodesOriginal {
             }
         }
     }
+}
+
+#[derive(Deserialize)]
+pub struct FlakeMetadataLocksNodesOriginalGit {
+    pub url: String,
 }
 
 #[derive(Deserialize)]
