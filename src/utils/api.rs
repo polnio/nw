@@ -1,12 +1,12 @@
-use crate::utils::config::CONFIG;
-use crate::utils::errors::print_error;
-use crate::utils::flake::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
+use crate::utils::errors::abort;
 use crate::utils::http::HTTP_CLIENT;
 use anyhow::{bail, Context, Result};
+use const_format::concatcp;
 use elasticsearch_dsl::{
     Aggregation, FieldSort, Operator, Query, Search, SearchResponse, Sort, TextQueryType,
 };
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::sync::LazyLock;
 
 #[derive(Deserialize)]
@@ -35,22 +35,53 @@ pub struct ApiPackage {
     pub position: Option<String>,
 }
 
+const API_BASE_URL: &str = "https://search.nixos.org/backend/";
+
 static API_URL: LazyLock<String> = LazyLock::new(|| {
-    let channel = FlakeMetadata::get(Some(CONFIG.nix().os_flake()))
-        .map_err(print_error)
-        .ok()
-        .and_then(|mut metadata| metadata.locks.nodes.remove("nixpkgs"))
-        .and_then(|nixpkgs| nixpkgs.original)
-        .and_then(|original| match original {
-            FlakeMetadataLocksNodesOriginal::Github(original) => original.r#ref,
-            _ => None,
-        })
-        .unwrap_or("nixos-unstable".into());
-    format!(
-        "https://search.nixos.org/backend/latest-42-{}/_search",
-        channel
-    )
+    let api_alias = match get_api_alias() {
+        Ok(url) => url,
+        Err(err) => {
+            abort(err);
+        }
+    };
+    format!("{}/{}/_search", API_BASE_URL, api_alias)
 });
+
+fn get_api_alias() -> Result<String> {
+    let response = HTTP_CLIENT
+        .get(concatcp!(API_BASE_URL, "_aliases"))
+        .basic_auth("aWVSALXpZv", Some("X8gPHnzL52wFEekuxsfQ9cSh"))
+        .send()
+        .context("Failed to fetch aliases from nixos.org")?;
+
+    if !response.status().is_success() {
+        let message = response.json::<ApiErrorResponse>().map_or(
+            "An error occuried while fetching aliases from nixos.org".into(),
+            |response| response.error.reason,
+        );
+        bail!(message);
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct Empty {}
+    #[derive(Debug, Deserialize)]
+    struct Aliases {
+        aliases: HashMap<String, Empty>,
+    }
+    type AllAliases = HashMap<String, Aliases>;
+
+    let all_aliases = response
+        .json::<AllAliases>()
+        .context("Failed to parse json")?;
+
+    let alias = all_aliases
+        .into_values()
+        .flat_map(|aliases| aliases.aliases.into_keys())
+        .find(|alias| alias.starts_with("latest") && alias.ends_with("nixos-unstable"))
+        .context("Failed to find latest unstable alias")?;
+
+    Ok(alias)
+}
 
 fn fetch_api(query: Search) -> Result<Vec<ApiPackage>> {
     let response = HTTP_CLIENT

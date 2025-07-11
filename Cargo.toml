@@ -10,6 +10,7 @@ authors = ["Po Co"]
 anyhow = "1.0.86"
 clap = { version = "4.5.4", features = ["derive"] }
 console = "0.15.8"
+const_format = "0.2.34"
 derive_more = { version = "2.0.0", features = ["deref"] }
 elasticsearch-dsl = "0.4.21"
 rayon = "1.10.0"
