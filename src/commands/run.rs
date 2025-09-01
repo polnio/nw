@@ -1,5 +1,4 @@
 use crate::utils::args::{RunArgs, ARGS};
-#[cfg(feature = "ui")]
 use crate::utils::config::CONFIG;
 use crate::utils::parse_package_name;
 use anyhow::{Context as _, Result};
