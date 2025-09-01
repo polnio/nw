@@ -1,4 +1,5 @@
 use clap::Parser;
+use std::num::NonZeroUsize;
 use std::sync::LazyLock;
 
 pub static ARGS: LazyLock<Args> = LazyLock::new(Args::parse);
@@ -7,16 +8,26 @@ pub static ARGS: LazyLock<Args> = LazyLock::new(Args::parse);
 pub struct Args {
     #[command(subcommand)]
     pub command: Command,
+
     #[arg(short, long, global = true)]
     pub quiet: bool,
+
     #[arg(long, global = true)]
     pub offline: bool,
+
     #[cfg(feature = "ui")]
     #[arg(long, global = true)]
     pub ui: bool,
+
     #[cfg(feature = "ui")]
     #[arg(long, global = true)]
     pub no_ui: bool,
+
+    #[arg(long, global = true)]
+    pub max_tasks: Option<NonZeroUsize>,
+
+    #[arg(long, global = true)]
+    pub max_cores: Option<NonZeroUsize>,
 }
 
 #[derive(clap::Subcommand)]

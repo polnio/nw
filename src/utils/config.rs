@@ -1,4 +1,3 @@
-#[cfg(feature = "ui")]
 use super::args::ARGS;
 use super::errors::{abort, print_error};
 use super::flake::metadata::{FlakeMetadata, FlakeMetadataLocksNodesOriginal};
@@ -7,6 +6,7 @@ use crate::utils::xdg::XDG_DIRS;
 use anyhow::{Context, Result};
 use derive_more::Deref;
 use serde::{Deserialize, Deserializer};
+use std::num::NonZeroUsize;
 use std::sync::LazyLock;
 
 #[derive(Default, Deref)]
@@ -48,6 +48,8 @@ pub struct ConfigGeneral {
     interactive_shell: OnceLock<String>,
     #[cfg(feature = "ui")]
     ui: OnceLock<bool>,
+    max_cores: OnceLock<Option<NonZeroUsize>>,
+    max_tasks: OnceLock<Option<NonZeroUsize>>,
 }
 impl ConfigGeneral {
     pub fn shell(&self) -> &str {
@@ -70,6 +72,12 @@ impl ConfigGeneral {
     #[cfg(not(feature = "ui"))]
     pub fn ui(&self) -> bool {
         false
+    }
+    pub fn max_tasks(&self) -> Option<NonZeroUsize> {
+        ARGS.max_tasks.or(*self.max_tasks.get_or_init(|| None))
+    }
+    pub fn max_cores(&self) -> Option<NonZeroUsize> {
+        ARGS.max_cores.or(*self.max_cores.get_or_init(|| None))
     }
 }
 #[derive(Deserialize, Default)]
