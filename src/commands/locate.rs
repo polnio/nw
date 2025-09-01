@@ -17,7 +17,7 @@ pub fn locate(args: &LocateArgs) -> Result<()> {
         .unwrap_or_default();
 
     Exec::shell(format!(
-        "nix-locate --top-level --whole-name {} {}/{} | cut -d ' ' -f 1",
+        "nix-locate --whole-name {} {}/{} | cut -d ' ' -f 1",
         at_root.then_some("--at-root").unwrap_or_default(),
         path,
         args.query
