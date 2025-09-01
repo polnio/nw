@@ -10,6 +10,7 @@ pub struct FlakeRegistry {
     // pub owner: FlakeRegistryOwner,
 }
 
+#[allow(unused)]
 pub enum FlakeRegistryOwner {
     User,
     Global,
