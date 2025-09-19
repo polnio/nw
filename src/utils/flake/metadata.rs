@@ -26,12 +26,14 @@ pub struct FlakeMetadataLocksNode {
 #[derive(Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum FlakeMetadataLocksNodesOriginal {
+    Indirect(FlakeMetadataLocksNodesOriginalIndirect),
     Git(FlakeMetadataLocksNodesOriginalGit),
-    Github(FlakeMetadataLocksNodesOriginalGithub),
-    SourceHut(FlakeMetadataLocksNodesOriginalSourceHut),
+    Mercurial(FlakeMetadataLocksNodesOriginalMercurial),
     Tarball(FlakeMetadataLocksNodesOriginalTarball),
     File(FlakeMetadataLocksNodesOriginalFile),
-    Indirect(FlakeMetadataLocksNodesOriginalIndirect),
+    Github(FlakeMetadataLocksNodesOriginalGithub),
+    Gitlab(FlakeMetadataLocksNodesOriginalGitlab),
+    SourceHut(FlakeMetadataLocksNodesOriginalSourceHut),
 }
 
 fn parse_git(provider: &str, owner: &str, repo: &str, r#ref: Option<&str>) -> String {
@@ -46,9 +48,27 @@ impl TryInto<String> for FlakeMetadataLocksNodesOriginal {
     type Error = Error;
     fn try_into(self) -> Result<String> {
         match self {
+            Self::Indirect(original) => {
+                let Some(registry) = FlakeRegistry::get(&original.id)? else {
+                    bail!("Failed to find flake registry");
+                };
+                Ok(registry.path)
+            }
             Self::Git(original) => Ok(format!("git+{}", original.url)),
+            Self::Mercurial(original) => Ok(format!("hg+{}", original.url)),
+            Self::Tarball(original) => Ok(original.url),
+            Self::File(original) if original.url.contains("://") => {
+                Ok(format!("file+{}", original.url))
+            }
+            Self::File(original) => Ok(format!("file:{}", original.url)),
             Self::Github(original) => Ok(parse_git(
                 "github",
+                &original.owner,
+                &original.repo,
+                original.r#ref.as_deref(),
+            )),
+            Self::Gitlab(original) => Ok(parse_git(
+                "gitlab",
                 &original.owner,
                 &original.repo,
                 original.r#ref.as_deref(),
@@ -59,19 +79,13 @@ impl TryInto<String> for FlakeMetadataLocksNodesOriginal {
                 &original.repo,
                 original.r#ref.as_deref(),
             )),
-            Self::Tarball(original) => Ok(original.url),
-            Self::File(original) if original.url.contains("://") => {
-                Ok(format!("file+{}", original.url))
-            }
-            Self::File(original) => Ok(format!("file:{}", original.url)),
-            Self::Indirect(original) => {
-                let Some(registry) = FlakeRegistry::get(&original.id)? else {
-                    bail!("Failed to find flake registry");
-                };
-                Ok(registry.path)
-            }
         }
     }
+}
+
+#[derive(Deserialize)]
+pub struct FlakeMetadataLocksNodesOriginalIndirect {
+    pub id: String,
 }
 
 #[derive(Deserialize)]
@@ -80,17 +94,8 @@ pub struct FlakeMetadataLocksNodesOriginalGit {
 }
 
 #[derive(Deserialize)]
-pub struct FlakeMetadataLocksNodesOriginalGithub {
-    pub owner: String,
-    pub repo: String,
-    pub r#ref: Option<String>,
-}
-
-#[derive(Deserialize)]
-pub struct FlakeMetadataLocksNodesOriginalSourceHut {
-    pub owner: String,
-    pub repo: String,
-    pub r#ref: Option<String>,
+pub struct FlakeMetadataLocksNodesOriginalMercurial {
+    pub url: String,
 }
 
 #[derive(Deserialize)]
@@ -104,8 +109,24 @@ pub struct FlakeMetadataLocksNodesOriginalFile {
 }
 
 #[derive(Deserialize)]
-pub struct FlakeMetadataLocksNodesOriginalIndirect {
-    pub id: String,
+pub struct FlakeMetadataLocksNodesOriginalGithub {
+    pub owner: String,
+    pub repo: String,
+    pub r#ref: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct FlakeMetadataLocksNodesOriginalGitlab {
+    pub owner: String,
+    pub repo: String,
+    pub r#ref: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct FlakeMetadataLocksNodesOriginalSourceHut {
+    pub owner: String,
+    pub repo: String,
+    pub r#ref: Option<String>,
 }
 
 #[derive(Deserialize)]
