@@ -7,6 +7,7 @@ use utils::errors::abort;
 
 fn main() {
     let result = match &ARGS.command {
+        args::Command::Build(args) => commands::build(args).context("Failed to run package"),
         args::Command::Run(args) => commands::run(args).context("Failed to run package"),
         args::Command::Shell(args) => commands::shell(args).context("Failed to start shell"),
         args::Command::Search(args) => commands::search(args).context("Failed to search package"),

@@ -36,6 +36,7 @@ pub enum Command {
     Info(InfoArgs),
     Locate(LocateArgs),
     Shell(ShellArgs),
+    Build(BuildArgs),
     Run(RunArgs),
     Flake(FlakeArgs),
     Os(OsArgs),
@@ -63,6 +64,11 @@ pub struct ShellArgs {
     pub command: Option<String>,
     #[arg(short, long)]
     pub dev: bool,
+}
+
+#[derive(clap::Args)]
+pub struct BuildArgs {
+    pub package: String,
 }
 
 #[derive(clap::Args)]

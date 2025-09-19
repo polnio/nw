@@ -1,3 +1,4 @@
+mod build;
 mod info;
 mod locate;
 mod run;
@@ -7,6 +8,7 @@ mod shell;
 pub mod flake;
 pub mod os;
 
+pub use build::build;
 pub use info::info;
 pub use locate::locate;
 pub use run::run;
