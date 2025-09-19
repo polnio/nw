@@ -1,5 +1,6 @@
 pub mod api;
 pub mod args;
+pub mod build;
 pub mod config;
 pub mod errors;
 pub mod ext;

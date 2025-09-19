@@ -1,6 +1,6 @@
-use crate::utils::args::{ShellArgs, ARGS};
+use crate::utils::args::ShellArgs;
 use crate::utils::config::CONFIG;
-use crate::utils::parse_package_name;
+use crate::utils::{build, parse_package_name};
 use anyhow::{Context as _, Result};
 use subprocess::Exec;
 
@@ -23,18 +23,8 @@ pub fn shell(args: &ShellArgs) -> Result<()> {
         command = command.arg("shell");
     }
 
-    if ARGS.offline {
-        command = command.args(&["--offline", "--no-net"])
-    }
-    if ARGS.quiet {
-        command = command.arg("--quiet");
-    }
-    if let Some(max_tasks) = CONFIG.general().max_tasks() {
-        command = command.args(&["--max-jobs", &max_tasks.to_string()]);
-    }
-    if let Some(max_cores) = CONFIG.general().max_cores() {
-        command = command.args(&["--cores", &max_cores.to_string()]);
-    }
+    command = build::append_args(command);
+
     command
         .args(&packages)
         .args(&["-c", CONFIG.general().shell(), "-c", subcommand])
