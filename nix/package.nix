@@ -3,6 +3,7 @@
   lib,
   rustPlatform,
   makeWrapper,
+  installShellFiles,
 
   # Packages
   nix-index,
@@ -28,15 +29,15 @@ rustPlatform.buildRustPackage rec {
   nativeBuildInputs = [
     pkg-config
     makeWrapper
+    installShellFiles
   ];
-  buildInputs =
-    [
-      nix-index
-    ]
-    ++ (lib.optionals withUI [
-      nix-output-monitor
-      nvd
-    ]);
+  buildInputs = [
+    nix-index
+  ]
+  ++ (lib.optionals withUI [
+    nix-output-monitor
+    nvd
+  ]);
 
   buildFeatures = lib.optionals withUI [ "ui" ];
   checkFeatures = [ "ui" ];
@@ -50,7 +51,17 @@ rustPlatform.buildRustPackage rec {
       nvd
     ]
   );
+  GEN_ARTIFACTS = "artifacts";
+
   postFixup = ''
     wrapProgram $out/bin/nw --prefix LD_LIBRARY_PATH : ${LD_LIBRARY_PATH} --prefix PATH : ${PATH}
+  '';
+  postInstall = ''
+    installManPage artifacts/nw.1
+    installShellCompletion \
+      --bash artifacts/nw.bash \
+      --zsh artifacts/_nw \
+      --fish artifacts/nw.fish \
+
   '';
 }
