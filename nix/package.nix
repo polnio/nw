@@ -54,14 +54,14 @@ rustPlatform.buildRustPackage rec {
   GEN_ARTIFACTS = "artifacts";
 
   postFixup = ''
-    wrapProgram $out/bin/nw --prefix LD_LIBRARY_PATH : ${LD_LIBRARY_PATH} --prefix PATH : ${PATH}
+    wrapProgram $out/bin/${pname} --prefix LD_LIBRARY_PATH : ${LD_LIBRARY_PATH} --prefix PATH : ${PATH}
   '';
   postInstall = ''
-    installManPage artifacts/nw.1
+    installManPage artifacts/${pname}.1
     installShellCompletion \
-      --bash artifacts/nw.bash \
+      --bash artifacts/${pname}.bash \
       --zsh artifacts/_nw \
-      --fish artifacts/nw.fish \
+      --fish artifacts/${pname}.fish \
 
   '';
 }
